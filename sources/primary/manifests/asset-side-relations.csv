@@ -1,0 +1,214 @@
+child_oid,sequence_index,institutional_label,relation_index,side_id,folio_number,face,coverage,parse_status,rule_id
+1006076,3,1r,1,1r,1,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006077,4,1v,1,1v,1,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006078,5,2r,1,2r,2,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006079,6,2v,1,2v,2,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006080,7,3r,1,3r,3,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006081,8,3v,1,3v,3,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006082,9,4r,1,4r,4,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006083,10,4v,1,4v,4,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006084,11,5r,1,5r,5,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006085,12,5v,1,5v,5,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006086,13,6r,1,6r,6,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006087,14,6v,1,6v,6,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006088,15,7r,1,7r,7,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006089,16,7v,1,7v,7,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006090,17,8r,1,8r,8,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006091,18,8v,1,8v,8,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006092,19,9r,1,9r,9,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006093,20,9v,1,9v,9,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006094,21,10r,1,10r,10,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006095,22,10v,1,10v,10,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006096,23,11r,1,11r,11,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006097,24,11v,1,11v,11,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006098,25,13r,1,13r,13,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006099,26,13v,1,13v,13,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006100,27,14r,1,14r,14,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006101,28,14v,1,14v,14,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006102,29,15r,1,15r,15,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006103,30,15v,1,15v,15,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006104,31,16r,1,16r,16,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006105,32,16v,1,16v,16,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006106,33,17r,1,17r,17,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006107,34,17v,1,17v,17,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006108,35,18r,1,18r,18,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006109,36,18v,1,18v,18,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006110,37,19r,1,19r,19,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006111,38,19v,1,19v,19,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006112,39,20r,1,20r,20,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006113,40,20v,1,20v,20,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006114,41,21r,1,21r,21,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006115,42,21v,1,21v,21,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006116,43,22r,1,22r,22,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006117,44,22v,1,22v,22,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006118,45,23r,1,23r,23,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006119,46,23v,1,23v,23,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006120,47,24r,1,24r,24,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006121,48,24v,1,24v,24,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006122,49,25r,1,25r,25,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006123,50,25v,1,25v,25,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006124,51,26r,1,26r,26,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006125,52,26v,1,26v,26,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006126,53,27r,1,27r,27,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006127,54,27v,1,27v,27,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006128,55,28r,1,28r,28,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006129,56,28v,1,28v,28,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006130,57,29r,1,29r,29,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006131,58,29v,1,29v,29,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006132,59,30r,1,30r,30,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006133,60,30v,1,30v,30,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006134,61,31r,1,31r,31,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006135,62,31v,1,31v,31,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006136,63,32r,1,32r,32,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006137,64,32v,1,32v,32,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006138,65,33r,1,33r,33,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006139,66,33v,1,33v,33,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006140,67,34r,1,34r,34,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006141,68,34v,1,34v,34,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006142,69,35r,1,35r,35,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006143,70,35v,1,35v,35,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006144,71,36r,1,36r,36,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006145,72,36v,1,36v,36,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006146,73,37r,1,37r,37,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006147,74,37v,1,37v,37,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006148,75,38r,1,38r,38,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006149,76,38v,1,38v,38,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006150,77,39r,1,39r,39,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006151,78,39v,1,39v,39,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006152,79,40r,1,40r,40,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006153,80,40v,1,40v,40,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006154,81,41r,1,41r,41,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006155,82,41v,1,41v,41,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006156,83,42r,1,42r,42,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006157,84,42v,1,42v,42,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006158,85,43r,1,43r,43,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006159,86,43v,1,43v,43,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006160,87,44r,1,44r,44,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006161,88,44v,1,44v,44,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006162,89,45r,1,45r,45,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006163,90,45v,1,45v,45,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006164,91,46r,1,46r,46,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006165,92,46v,1,46v,46,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006166,93,47r,1,47r,47,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006167,94,47v,1,47v,47,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006168,95,48r,1,48r,48,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006169,96,48v,1,48v,48,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006170,97,49r,1,49r,49,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006171,98,49v,1,49v,49,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006172,99,50r,1,50r,50,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006173,100,50v,1,50v,50,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006174,101,51r,1,51r,51,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006175,102,51v,1,51v,51,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006176,103,52r,1,52r,52,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006177,104,52v,1,52v,52,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006178,105,53r,1,53r,53,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006179,106,53v,1,53v,53,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006180,107,54r,1,54r,54,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006181,108,54v,1,54v,54,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006182,109,55r,1,55r,55,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006183,110,55v,1,55v,55,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006184,111,56r,1,56r,56,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006185,112,56v,1,56v,56,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006186,113,57r,1,57r,57,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006187,114,57v,1,57v,57,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006188,115,58r,1,58r,58,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006189,116,58v,1,58v,58,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006190,117,65r,1,65r,65,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006191,118,65v,1,65v,65,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006192,119,66r,1,66r,66,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006193,120,66v,1,66v,66,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006194,121,67r,1,67r,67,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006195,122,67v,1,67v,67,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006196,123,68r,1,68r,68,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006197,124,68v,1,68v,68,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006198,125,69r,1,69r,69,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006199,126,69v and 70r,1,69v,69,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006199,126,69v and 70r,2,70r,70,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006200,127,70v (part),1,70v,70,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006201,128,70v (part),1,70v,70,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006202,129,71r,1,71r,71,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006203,130,71v and 72r,1,71v,71,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006203,130,71v and 72r,2,72r,72,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006204,131,72v (part),1,72v,72,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006205,132,72v (part),1,72v,72,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006206,133,73r,1,73r,73,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006207,134,73v,1,73v,73,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006208,135,75r,1,75r,75,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006209,136,75v,1,75v,75,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006210,137,76r,1,76r,76,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006211,138,76v,1,76v,76,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006212,139,77r,1,77r,77,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006213,140,77v,1,77v,77,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006214,141,78r,1,78r,78,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006215,142,78v,1,78v,78,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006216,143,79r,1,79r,79,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006217,144,79v,1,79v,79,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006218,145,80r,1,80r,80,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006219,146,80v,1,80v,80,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006220,147,81r,1,81r,81,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006221,148,81v,1,81v,81,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006222,149,82r,1,82r,82,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006223,150,82v,1,82v,82,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006224,151,83r,1,83r,83,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006225,152,83v,1,83v,83,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006226,153,84r,1,84r,84,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006227,154,84v,1,84v,84,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006228,155,85r (part) (part of 85-86 foldout),1,85r,85,r,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006229,156,85r (part) 86v (part) (part of 85-86 foldout),1,85r,85,r,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006229,156,85r (part) 86v (part) (part of 85-86 foldout),2,86v,86,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006230,157,86v (part) (part of 85-86 foldout),1,86v,86,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006231,158,85v and 86r (foldout),1,85v,85,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006231,158,85v and 86r (foldout),2,86r,86,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006232,159,87r,1,87r,87,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1043429,160,87v,1,87v,87,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1037112,161,88r,1,88r,88,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006233,162,88v and 89r,1,88v,88,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006233,162,88v and 89r,2,89r,89,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006234,163,89v (part),1,89v,89,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006235,164,89v (part) and 90r,1,89v,89,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006235,164,89v (part) and 90r,2,90r,90,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006236,165,90r,1,90r,90,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006237,166,90v (part),1,90v,90,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006238,167,93r,1,93r,93,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006239,168,93v,1,93v,93,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006240,169,94r,1,94r,94,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006241,170,94v and 95r,1,94v,94,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006241,170,94v and 95r,2,95r,95,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006242,171,95v (part),1,95v,95,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006243,172,95v,1,95v,95,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006244,173,96r,1,96r,96,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006245,174,96v,1,96v,96,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006246,175,99r,1,99r,99,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006247,176,99v,1,99v,99,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006248,177,100r,1,100r,100,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006249,178,100v and 101r,1,100v,100,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006249,178,100v and 101r,2,101r,101,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006250,179,101v (part),1,101v,101,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006251,180,101v (part) and 102r,1,101v,101,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006251,180,101v (part) and 102r,2,102r,102,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006252,181,102v (part),1,102v,102,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006253,182,102v (part),1,102v,102,v,part,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006254,183,103r,1,103r,103,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006255,184,103v,1,103v,103,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006256,185,104r,1,104r,104,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006257,186,104v,1,104v,104,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006258,187,105r,1,105r,105,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006259,188,105v,1,105v,105,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006260,189,106r,1,106r,106,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006261,190,106v,1,106v,106,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006262,191,107r,1,107r,107,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006263,192,107v,1,107v,107,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006264,193,108r,1,108r,108,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006265,194,108v,1,108v,108,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006266,195,111r,1,111r,111,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006267,196,111v,1,111v,111,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006268,197,112r,1,112r,112,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006269,198,112v,1,112v,112,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006270,199,113r,1,113r,113,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006271,200,113v,1,113v,113,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006272,201,114r,1,114r,114,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006273,202,114v,1,114v,114,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006274,203,115r,1,115r,115,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006275,204,115v,1,115v,115,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006276,205,116r,1,116r,116,r,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1
+1006277,206,116v,1,116v,116,v,full_or_unspecified,explicit_label_token,LABEL-FOLIO-TOKEN-V1

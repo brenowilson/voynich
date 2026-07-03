@@ -1,0 +1,22 @@
+candidate_id,child_oid,sequence_index,institutional_label,candidate_type,side_ids,relation_count,basis,status
+COMPOSITE-1006199,1006199,126,69v and 70r,multi_side_asset,69v;70r,2,institutional label contains multiple explicit sides,label_derived_candidate
+COMPOSITE-1006200,1006200,127,70v (part),fragmented_side_asset,70v,1,institutional label contains an explicit part marker,label_derived_candidate
+COMPOSITE-1006201,1006201,128,70v (part),fragmented_side_asset,70v,1,institutional label contains an explicit part marker,label_derived_candidate
+COMPOSITE-1006203,1006203,130,71v and 72r,multi_side_asset,71v;72r,2,institutional label contains multiple explicit sides,label_derived_candidate
+COMPOSITE-1006204,1006204,131,72v (part),fragmented_side_asset,72v,1,institutional label contains an explicit part marker,label_derived_candidate
+COMPOSITE-1006205,1006205,132,72v (part),fragmented_side_asset,72v,1,institutional label contains an explicit part marker,label_derived_candidate
+COMPOSITE-1006228,1006228,155,85r (part) (part of 85-86 foldout),explicit_foldout_label,85r,1,institutional label contains 'foldout',label_derived_candidate
+COMPOSITE-1006229,1006229,156,85r (part) 86v (part) (part of 85-86 foldout),explicit_foldout_label,85r;86v,2,institutional label contains 'foldout',label_derived_candidate
+COMPOSITE-1006230,1006230,157,86v (part) (part of 85-86 foldout),explicit_foldout_label,86v,1,institutional label contains 'foldout',label_derived_candidate
+COMPOSITE-1006231,1006231,158,85v and 86r (foldout),explicit_foldout_label,85v;86r,2,institutional label contains 'foldout',label_derived_candidate
+COMPOSITE-1006233,1006233,162,88v and 89r,multi_side_asset,88v;89r,2,institutional label contains multiple explicit sides,label_derived_candidate
+COMPOSITE-1006234,1006234,163,89v (part),fragmented_side_asset,89v,1,institutional label contains an explicit part marker,label_derived_candidate
+COMPOSITE-1006235,1006235,164,89v (part) and 90r,multi_side_with_parts,89v;90r,2,institutional label contains multiple explicit sides and at least one part marker,label_derived_candidate
+COMPOSITE-1006237,1006237,166,90v (part),fragmented_side_asset,90v,1,institutional label contains an explicit part marker,label_derived_candidate
+COMPOSITE-1006241,1006241,170,94v and 95r,multi_side_asset,94v;95r,2,institutional label contains multiple explicit sides,label_derived_candidate
+COMPOSITE-1006242,1006242,171,95v (part),fragmented_side_asset,95v,1,institutional label contains an explicit part marker,label_derived_candidate
+COMPOSITE-1006249,1006249,178,100v and 101r,multi_side_asset,100v;101r,2,institutional label contains multiple explicit sides,label_derived_candidate
+COMPOSITE-1006250,1006250,179,101v (part),fragmented_side_asset,101v,1,institutional label contains an explicit part marker,label_derived_candidate
+COMPOSITE-1006251,1006251,180,101v (part) and 102r,multi_side_with_parts,101v;102r,2,institutional label contains multiple explicit sides and at least one part marker,label_derived_candidate
+COMPOSITE-1006252,1006252,181,102v (part),fragmented_side_asset,102v,1,institutional label contains an explicit part marker,label_derived_candidate
+COMPOSITE-1006253,1006253,182,102v (part),fragmented_side_asset,102v,1,institutional label contains an explicit part marker,label_derived_candidate
