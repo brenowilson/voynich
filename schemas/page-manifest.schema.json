@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/page-manifest.schema.json",
+  "title": "Page Manifest Record",
+  "type": "object",
+  "required": ["folio_id", "institutional_id", "source_sha256", "width_px", "height_px"],
+  "properties": {
+    "folio_id": {"type": "string"},
+    "institutional_id": {"type": "string"},
+    "source_url": {"type": "string", "format": "uri"},
+    "source_sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"},
+    "width_px": {"type": "integer", "minimum": 1},
+    "height_px": {"type": "integer", "minimum": 1},
+    "rights": {"type": ["string", "null"]},
+    "retrieved_at": {"type": ["string", "null"], "format": "date-time"},
+    "notes": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

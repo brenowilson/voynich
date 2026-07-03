@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/glyph-instance.schema.json",
+  "title": "Glyph Instance Candidate",
+  "type": "object",
+  "required": ["instance_id", "folio_id", "region_id", "geometry", "source_sha256", "status"],
+  "properties": {
+    "instance_id": {"type": "string"},
+    "folio_id": {"type": "string"},
+    "region_id": {"type": "string"},
+    "line_candidate_id": {"type": ["string", "null"]},
+    "geometry": {
+      "type": "object",
+      "required": ["coordinate_space", "bbox"],
+      "properties": {
+        "coordinate_space": {"enum": ["pixel", "normalized"]},
+        "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}},
+        "polygon": {"type": ["array", "null"]}
+      }
+    },
+    "connected_components": {"type": ["integer", "null"], "minimum": 0},
+    "visual_class_id": {"type": ["string", "null"]},
+    "alternatives": {"type": "array", "items": {"type": "object"}},
+    "status": {"enum": ["observed", "provisional", "ambiguous", "unresolved", "excluded"]},
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "source_sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"},
+    "protocol_version": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

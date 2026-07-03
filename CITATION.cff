@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+title: Voynich Independent Structural Analysis
+type: software
+authors:
+  - family-names: Andrade
+    given-names: Breno
+repository-code: https://github.com/brenowilson/voynich
+message: "Cite a tagged release and its corpus freeze identifier."

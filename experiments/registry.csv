@@ -1,0 +1,2 @@
+experiment_id,title,status,kind,corpus_freeze,code_commit,preregistered_at,owner,notes
+EXP-0001,Repository and methodology bootstrap,complete,infrastructure,,0bfc350cc09a7cecdf9fc1e3e89b295031702e2e,2026-07-03,Breno Andrade,Initial project foundation

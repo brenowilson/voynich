@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+.DS_Store
+
+# Large or generated research artifacts
+assets/source-images/*
+assets/normalized-images/*
+assets/page-masks/*
+assets/line-crops/*
+assets/glyph-crops/*
+assets/thumbnails/*
+reports/generated/*
+
+# Keep directory documentation
+!assets/**/README.md
