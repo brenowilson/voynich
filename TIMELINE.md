@@ -37,3 +37,22 @@ The project is deliberately exploring structures that may not fit existing lingu
 
 ### Status
 Accepted.
+
+## 2026-07-03 — Canonical Yale source bootstrap
+
+### Result
+The official Yale IIIF manifest for Beinecke MS 408 was acquired and normalized successfully.
+
+### Evidence
+- Parent OID: `2002046`.
+- Manifest SHA-256: `c1f12b6ad256b91e1b5c8015c2107de1c2ff24e573f4524c53e8f4004bccfc23`.
+- Normalized canvas/image records: `213`.
+- Automated parser, acquisition and output validation completed successfully in GitHub Actions run `28686501175`.
+
+### Consequences
+- The institutional IIIF manifest replaces the HolyBooks PDF as the canonical digital source index.
+- Institutional labels remain verbatim; physical folio and foldout relationships are not inferred silently.
+- Byte-level hashing of full-resolution image files remains pending before `SOURCE-FREEZE-0001` can be declared.
+
+### Status
+Validated; not frozen.
