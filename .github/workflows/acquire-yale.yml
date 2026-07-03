@@ -9,6 +9,13 @@ on:
       - "tests/unit/test_yale_acquisition.py"
       - "sources/primary/yale/source-record.json"
       - ".github/workflows/acquire-yale.yml"
+  pull_request:
+    paths:
+      - "scripts/acquire_yale.py"
+      - "src/voynich/acquisition/**"
+      - "tests/unit/test_yale_acquisition.py"
+      - "sources/primary/yale/source-record.json"
+      - ".github/workflows/acquire-yale.yml"
 
 permissions:
   contents: write
@@ -57,6 +64,7 @@ jobs:
             sources/primary/checksums/sha256.txt
 
       - name: Commit deterministic metadata snapshot
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "voynich-source-bot"
           git config user.email "voynich-source-bot@users.noreply.github.com"
