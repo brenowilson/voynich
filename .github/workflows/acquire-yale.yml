@@ -1,0 +1,71 @@
+name: Acquire Yale source metadata
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/acquire_yale.py"
+      - "src/voynich/acquisition/**"
+      - "tests/unit/test_yale_acquisition.py"
+      - "sources/primary/yale/source-record.json"
+      - ".github/workflows/acquire-yale.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+
+      - name: Test acquisition parser
+        run: pytest -q tests/unit/test_yale_acquisition.py
+
+      - name: Acquire official IIIF manifest and inventory
+        run: >-
+          python scripts/acquire_yale.py
+          --manifest-url https://collections.library.yale.edu/manifests/2002046.json
+          --output-root .
+
+      - name: Validate generated records
+        run: |
+          python -m json.tool sources/primary/yale/collection.json >/dev/null
+          python -m json.tool sources/primary/yale/manifest.json >/dev/null
+          test -s sources/primary/yale/assets.jsonl
+          test -s sources/primary/manifests/pages.csv
+          test -s sources/primary/checksums/sha256.txt
+
+      - name: Upload source-metadata snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: yale-source-metadata
+          path: |
+            sources/primary/yale/collection.json
+            sources/primary/yale/manifest.json
+            sources/primary/yale/assets.jsonl
+            sources/primary/manifests/pages.csv
+            sources/primary/checksums/sha256.txt
+
+      - name: Commit deterministic metadata snapshot
+        run: |
+          git config user.name "voynich-source-bot"
+          git config user.email "voynich-source-bot@users.noreply.github.com"
+          git add sources/primary/yale/collection.json \
+                  sources/primary/yale/manifest.json \
+                  sources/primary/yale/assets.jsonl \
+                  sources/primary/manifests/pages.csv \
+                  sources/primary/checksums/sha256.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "data: snapshot Yale IIIF source metadata"
+            git push
+          fi
