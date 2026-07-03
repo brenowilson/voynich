@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "institution": "Yale University Library / Beinecke Rare Book and Manuscript Library",
+  "shelfmark": "Beinecke MS 408",
+  "parent_oid": "2002046",
+  "catalog_url": "https://collections.library.yale.edu/catalog/2002046",
+  "manifest_url": "https://collections.library.yale.edu/manifests/2002046.json",
+  "oai_mods_url": "https://collections.library.yale.edu/catalog/oai?verb=GetRecord&metadataPrefix=oai_mods&identifier=oai:collections.library.yale.edu:2002046",
+  "physical_catalog_url": "https://pre1600ms.beinecke.library.yale.edu/docs/pre1600.ms408.htm",
+  "status": "acquisition-configured-not-frozen",
+  "evidence": [
+    {
+      "claim": "Yale Digital Collections constructs public manifest links by joining its IIIF manifest base URL with the parent OID and a .json suffix.",
+      "source": "https://github.com/yalelibrary/yul-dc-blacklight/blob/main/app/helpers/blacklight_helper.rb"
+    },
+    {
+      "claim": "Yale IIIF image services use child OIDs and expose Image API level 2 services.",
+      "source": "https://github.com/yalelibrary/yul-dc-management/blob/main/app/models/iiif_presentation_v3.rb"
+    }
+  ],
+  "notes": "The manifest is preserved verbatim before normalization. Institutional labels are not automatically converted into folio identifiers."
+}
