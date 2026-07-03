@@ -7,7 +7,8 @@
   "manifest_url": "https://collections.library.yale.edu/manifests/2002046.json",
   "oai_mods_url": "https://collections.library.yale.edu/catalog/oai?verb=GetRecord&metadataPrefix=oai_mods&identifier=oai:collections.library.yale.edu:2002046",
   "physical_catalog_url": "https://pre1600ms.beinecke.library.yale.edu/docs/pre1600.ms408.htm",
-  "status": "acquisition-configured-not-frozen",
+  "status": "acquisition-validation-running",
+  "validation_run": "SOURCE-FREEZE-0001-bootstrap",
   "evidence": [
     {
       "claim": "Yale Digital Collections constructs public manifest links by joining its IIIF manifest base URL with the parent OID and a .json suffix.",
