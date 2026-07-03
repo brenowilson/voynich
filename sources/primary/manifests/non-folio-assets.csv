@@ -1,0 +1,10 @@
+child_oid,sequence_index,institutional_label,classification,status
+1006074,1,[Front cover],support_or_unparsed_asset,explicit_label_contains_no_folio_side_token
+1006075,2,[Inside front cover],support_or_unparsed_asset,explicit_label_contains_no_folio_side_token
+1037113,207,[Back flyleaf recto],support_or_unparsed_asset,explicit_label_contains_no_folio_side_token
+1006278,208,[Back flyleaf verso-inside back cover],support_or_unparsed_asset,explicit_label_contains_no_folio_side_token
+11868207,209,[Head],support_or_unparsed_asset,explicit_label_contains_no_folio_side_token
+11868208,210,[Tail],support_or_unparsed_asset,explicit_label_contains_no_folio_side_token
+11868209,211,[Fore-edge],support_or_unparsed_asset,explicit_label_contains_no_folio_side_token
+11868210,212,[Spine],support_or_unparsed_asset,explicit_label_contains_no_folio_side_token
+1006279,213,[Back cover],support_or_unparsed_asset,explicit_label_contains_no_folio_side_token

@@ -5,15 +5,19 @@ on:
   push:
     paths:
       - "scripts/acquire_yale.py"
+      - "scripts/build_page_manifest.py"
       - "src/voynich/acquisition/**"
       - "tests/unit/test_yale_acquisition.py"
+      - "tests/unit/test_asset_side_relations.py"
       - "sources/primary/yale/source-record.json"
       - ".github/workflows/acquire-yale.yml"
   pull_request:
     paths:
       - "scripts/acquire_yale.py"
+      - "scripts/build_page_manifest.py"
       - "src/voynich/acquisition/**"
       - "tests/unit/test_yale_acquisition.py"
+      - "tests/unit/test_asset_side_relations.py"
       - "sources/primary/yale/source-record.json"
       - ".github/workflows/acquire-yale.yml"
 
@@ -37,8 +41,11 @@ jobs:
       - name: Install test dependency
         run: python -m pip install pytest
 
-      - name: Test acquisition parser
-        run: pytest -q tests/unit/test_yale_acquisition.py
+      - name: Test acquisition and relation parsers
+        run: >-
+          pytest -q
+          tests/unit/test_yale_acquisition.py
+          tests/unit/test_asset_side_relations.py
 
       - name: Acquire official IIIF manifest and inventory
         run: >-
@@ -46,12 +53,21 @@ jobs:
           --manifest-url https://collections.library.yale.edu/manifests/2002046.json
           --output-root .
 
+      - name: Build explicit asset-to-side relation tables
+        run: >-
+          python scripts/build_page_manifest.py
+          --assets sources/primary/yale/assets.jsonl
+          --output-dir sources/primary/manifests
+
       - name: Validate generated records
         run: |
           python -m json.tool sources/primary/yale/collection.json >/dev/null
           python -m json.tool sources/primary/yale/manifest.json >/dev/null
           test -s sources/primary/yale/assets.jsonl
           test -s sources/primary/manifests/pages.csv
+          test -s sources/primary/manifests/asset-side-relations.csv
+          test -s sources/primary/manifests/foldouts.csv
+          test -s sources/primary/manifests/non-folio-assets.csv
           test -s sources/primary/checksums/sha256.txt
 
       - name: Upload source-metadata snapshot
@@ -63,6 +79,9 @@ jobs:
             sources/primary/yale/manifest.json
             sources/primary/yale/assets.jsonl
             sources/primary/manifests/pages.csv
+            sources/primary/manifests/asset-side-relations.csv
+            sources/primary/manifests/foldouts.csv
+            sources/primary/manifests/non-folio-assets.csv
             sources/primary/checksums/sha256.txt
 
       - name: Commit deterministic metadata snapshot
@@ -74,6 +93,9 @@ jobs:
                   sources/primary/yale/manifest.json \
                   sources/primary/yale/assets.jsonl \
                   sources/primary/manifests/pages.csv \
+                  sources/primary/manifests/asset-side-relations.csv \
+                  sources/primary/manifests/foldouts.csv \
+                  sources/primary/manifests/non-folio-assets.csv \
                   sources/primary/checksums/sha256.txt
           if ! git diff --cached --quiet; then
             git commit -m "data: snapshot Yale IIIF source metadata"
