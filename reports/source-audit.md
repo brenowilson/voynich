@@ -1,38 +1,58 @@
-# Yale Source Audit — Bootstrap
+# Yale Source Audit — SOURCE-FREEZE-0001
 
-- Status: validated metadata acquisition; source freeze not yet declared
+## Status
+
+Canonical source acquisition is complete and frozen.
+
 - Institutional object: Beinecke MS 408
 - Yale parent OID: `2002046`
-- Manifest SHA-256: `c1f12b6ad256b91e1b5c8015c2107de1c2ff24e573f4524c53e8f4004bccfc23`
-- Validation workflow run: `28686501175`
-- Validation head: `cc1966b0ad7b9f4ab74604ed00cd7b9bb0b4f0f6`
+- Canonical representation: full-size Yale IIIF JPEG
+- Yale manifest SHA-256: `c1f12b6ad256b91e1b5c8015c2107de1c2ff24e573f4524c53e8f4004bccfc23`
+- Expected and verified assets: `213`
+- Stored objects revalidated: `213`
+- Total source-image bytes: `560,960,374`
+- Stored-object record-set SHA-256: `23b37de04ce9bb7cc6ef3920612418ef78a0bbfa4fa6107c04a32740456ad0e0`
+- Stable content-inventory SHA-256: `eadd4ee6ebe176b1de38cd48796966f819bffbe8d1e5ba0f8f05387fba1a5131`
+- Freeze record: `sources/primary/freezes/SOURCE-FREEZE-0001.json`
+
+## Provenance chain
+
+The source chain is:
+
+```text
+Yale Digital Collections parent object 2002046
+→ immutable IIIF manifest snapshot
+→ 213 canvas and image-service records
+→ 213 streamed full-size JPEG byte records
+→ content-addressed objects
+→ 16 checksummed external archive chunks
+→ post-upload restoration and full rehash
+→ SOURCE-FREEZE-0001
+```
+
+Every analytical source image is traceable to a Yale canvas identifier, child OID, image URL, institutional label, pixel dimensions, byte count, SHA-256 digest and content-addressed stored path.
+
+Image binaries are not committed to Git. The repository retains the manifests, checksums, byte records, storage inventory, acquisition code and audit evidence. The durable private store is described in `sources/primary/storage/SOURCE-FREEZE-0001-storage.json`.
 
 ## Inventory result
 
-The official Yale IIIF manifest normalized successfully into **213 canvas/image records**. Each record has a canvas identifier, institutional label, child OID, pixel dimensions, IIIF image-service endpoint and direct image URL.
-
-The inventory contains **210 unique institutional labels**. Repeated labels occur only where Yale exposes separate photographed parts of the same physical side:
+The official Yale IIIF manifest normalizes to **213 canvas/image records** and **210 unique institutional labels**. Repeated labels occur where Yale exposes separate photographed parts of the same physical side:
 
 - `70v (part)` — 2 assets;
 - `72v (part)` — 2 assets;
 - `102v (part)` — 2 assets.
 
-These are not treated as duplicate files. Their child OIDs and image dimensions differ.
+These are distinct institutional assets with different child OIDs and image geometry. They are not treated as duplicate files.
+
+All 213 image byte streams are non-empty and have distinct SHA-256 values.
 
 ## Non-folio assets
 
-The manifest also contains binding and support views:
-
-- front and back covers;
-- inside front cover;
-- back flyleaf / inside back cover;
-- head, tail, fore-edge and spine.
-
-These remain in the primary inventory but must not be silently mixed with manuscript-side observations.
+The canonical inventory includes nine binding or support views, including covers, inside covers, back flyleaf, head, tail, fore-edge and spine. They remain part of the primary-source freeze but are explicitly separated from manuscript-side observations.
 
 ## Foldouts and composite photographs
 
-Several canvases represent more than one folio side or only a photographed part. Examples include:
+A Yale canvas is not necessarily equivalent to a single physical folio side. Composite and partial labels include:
 
 - `69v and 70r`;
 - two separate `70v (part)` assets;
@@ -42,30 +62,37 @@ Several canvases represent more than one folio side or only a photographed part.
 - `94v and 95r` plus `95v (part)`;
 - `100v and 101r`, `101v (part) and 102r` and two `102v (part)` assets.
 
-A canvas is therefore not equivalent to one folio side. The next manifest layer must model many-to-many relationships between assets, physical sides and photographed panels.
+The current relation tables extract only folio-side tokens explicitly present in Yale labels. They do not infer reading order, adjacency, missing leaves or foldout geometry. The definitive physical-side and panel model remains tracked by issue #2.
 
-## Gaps in simple labels
+## Image geometry and byte identity
 
-A mechanical scan of labels matching only `number + r/v` does not find the following folio numbers in that simple form:
+Ordinary photographed sides are generally around 2,600–3,000 pixels wide and 3,700–3,900 pixels high. Composite and foldout assets are substantially wider; the largest normalized canvas in this snapshot is `7925 × 7268` pixels.
 
-`12, 59–64, 70, 72, 74, 85, 86, 89, 91, 92, 97, 98, 101, 102, 109, 110`.
+No canonical source image has been resized, deskewed, cropped, rotated or perspective-corrected. Every byte record names the exact downloaded representation and its digest.
 
-This is **not** interpreted as a list of acquisition failures. Some numbers are absent because the manuscript lacks those leaves; others are represented inside composite or part labels. The mapping must be resolved against institutional codicological metadata rather than guessed from sequence position.
+## Durable-store validation
 
-## Image geometry
+The content-addressed source store was packaged into 16 independently checksummed ZIP objects. After upload to the external store, every ZIP was downloaded again and compared with its originating artifact digest. All matched.
 
-Ordinary photographed sides are generally around 2,600–3,000 pixels wide and 3,700–3,900 pixels high. Composite and foldout assets are substantially wider, with the largest normalized canvas in this snapshot measuring `7925 × 7268` pixels.
+The downloaded archives were unpacked into a clean store. All inner shard checksums passed, exactly 213 stored objects were reconstructed, and every object was reopened and checked against its byte record. Result: **213 verified stored objects and zero mismatches**.
 
-Geometry is retained exactly as provided by the IIIF manifest. No resizing, deskewing, cropping or perspective correction has been applied.
+Restoration and replication requirements are defined in `docs/protocols/source-store-replication.md`. Temporary GitHub Actions artifacts are not considered durable storage.
 
-## Current limitations
+## Rights and reuse
 
-1. The audit validates the IIIF manifest and machine-readable asset inventory, not yet the byte-level hash of every full-resolution image.
-2. `folio_id` remains deliberately unresolved in `pages.csv`; institutional labels are preserved verbatim.
-3. Foldout reconstruction and panel ordering have not been inferred.
-4. Rights and reuse conditions must be captured before redistributing image bytes.
-5. The HolyBooks PDF remains a non-canonical access facsimile and is excluded from pixel-level provenance.
+The canonical IIIF manifest does not supply an item-specific `rights` or license value. This absence is preserved rather than replaced by an invented license.
 
-## Next action
+Yale states in its institutional reuse policy that photographs and digitized copies of public-domain images are openly available for reuse. Yale also states that users remain responsible for legal assessment and necessary permissions and provides the preferred credit line `Courtesy of the Yale University Library`.
 
-Build a physical-side/panel relation table from institutional labels and codicological evidence, then implement streamed image acquisition and SHA-256 verification without committing large image binaries to Git.
+The project therefore records a policy-based assessment, not an item-specific license grant. Source bytes remain in a private external store and are not distributed through Git. The complete assessment and institutional policy sources are recorded in `sources/primary/yale/rights.json`.
+
+## Canonical exclusions
+
+- The supplied HolyBooks PDF is retained only as a non-canonical access facsimile.
+- PDF page numbering is not a source identifier.
+- External transliterations, Currier classifications and third-party segmentations did not inform acquisition or source freezing.
+- No semantic, linguistic or glyph-identity claim is encoded in the primary-source inventory.
+
+## Remaining source-layer work
+
+The acquisition objective is complete. The remaining source-layer task is issue #2: construct and validate the canonical many-to-many model linking institutional assets, physical folio sides and photographed foldout panels without guessing reading order.
