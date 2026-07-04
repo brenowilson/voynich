@@ -1,0 +1,91 @@
+name: Build durable Yale source store
+
+on:
+  pull_request:
+    paths:
+      - ".durable-store-trigger"
+      - ".github/workflows/build-durable-source-store.yml"
+      - "src/voynich/acquisition/byte_store.py"
+      - "src/voynich/acquisition/freeze.py"
+      - "scripts/acquire_image_bytes.py"
+      - "scripts/build_source_freeze.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+  MANIFEST_SHA256: c1f12b6ad256b91e1b5c8015c2107de1c2ff24e573f4524c53e8f4004bccfc23
+
+jobs:
+  build-shards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Acquire and retain shard bytes
+        run: |
+          mkdir -p source-store byte-records packages
+          python scripts/acquire_image_bytes.py \
+            --assets sources/primary/yale/assets.jsonl \
+            --output byte-records/records-${{ matrix.shard }}.jsonl \
+            --store-root source-store \
+            --manifest-sha256 "$MANIFEST_SHA256" \
+            --shard-index ${{ matrix.shard }} \
+            --shard-count 8
+      - name: Package content-addressed shard
+        run: |
+          tar -C source-store -czf packages/source-store-shard-${{ matrix.shard }}.tar.gz sha256
+          sha256sum packages/source-store-shard-${{ matrix.shard }}.tar.gz > packages/source-store-shard-${{ matrix.shard }}.tar.gz.sha256
+          cp byte-records/records-${{ matrix.shard }}.jsonl packages/
+      - name: Upload restorable shard
+        uses: actions/upload-artifact@v4
+        with:
+          name: durable-source-shard-${{ matrix.shard }}
+          path: packages/
+          compression-level: 0
+
+  verify-restoration:
+    needs: build-shards
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: durable-source-shard-*
+          path: downloaded
+      - name: Restore all shards
+        run: |
+          mkdir -p restored-store combined-records freeze-output
+          find downloaded -name '*.tar.gz.sha256' -print0 | xargs -0 -n1 sh -c 'cd "$(dirname "$0")" && sha256sum -c "$(basename "$0")"'
+          find downloaded -name '*.tar.gz' -print0 | xargs -0 -n1 tar -C restored-store -xzf
+          find downloaded -name 'records-*.jsonl' -exec cp {} combined-records/ \;
+      - name: Validate stored objects and build freeze
+        run: |
+          python scripts/build_source_freeze.py \
+            --freeze-id SOURCE-FREEZE-0001 \
+            --assets sources/primary/yale/assets.jsonl \
+            --records combined-records/records-*.jsonl \
+            --manifest-sha256 "$MANIFEST_SHA256" \
+            --output freeze-output/SOURCE-FREEZE-0001.json \
+            --store-root restored-store
+          find downloaded -name '*.tar.gz.sha256' -exec cat {} \; | sort > freeze-output/archive-checksums.sha256
+          cat combined-records/records-*.jsonl | sort > freeze-output/image-byte-records.jsonl
+      - name: Upload freeze evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: durable-source-freeze-0001
+          path: freeze-output/
+          compression-level: 0
