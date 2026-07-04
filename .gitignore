@@ -21,5 +21,10 @@ assets/glyph-crops/*
 assets/thumbnails/*
 reports/generated/*
 
+# External content-addressed image stores
+.external-store/
+source-store/
+**/*.part
+
 # Keep directory documentation
 !assets/**/README.md
