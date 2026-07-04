@@ -1,0 +1,46 @@
+{
+  "schema_version": "0.1.0",
+  "assessed_at": "2026-07-04",
+  "institution": "Yale University Library / Beinecke Rare Book and Manuscript Library",
+  "shelfmark": "Beinecke MS 408",
+  "parent_oid": "2002046",
+  "source_manifest_sha256": "c1f12b6ad256b91e1b5c8015c2107de1c2ff24e573f4524c53e8f4004bccfc23",
+  "manifest_rights_value": null,
+  "manifest_rights_status": "No item-specific rights or license value is supplied by the canonical IIIF manifest snapshot.",
+  "institutional_policy_assessment": {
+    "public_domain_digital_representations": "Yale states that its photographs and digitized copies of public-domain images are openly available for reuse.",
+    "user_responsibility": "Yale makes no warranty that a proposed use is non-infringing; users remain responsible for legal assessment and any necessary permissions.",
+    "protected_materials": "Permission from relevant rightsholders is required for protected material beyond fair use or other statutory exemptions.",
+    "credit_line": "Courtesy of the Yale University Library"
+  },
+  "project_policy": {
+    "license_asserted_by_project": null,
+    "public_redistribution_of_source_bytes": false,
+    "repository_content": "The Git repository contains source metadata, URLs, dimensions, hashes, byte records, audits and protocols, but not the image binaries.",
+    "external_store_access": "The durable source store is private and access-controlled.",
+    "publication_rule": "Any public redistribution or publication must independently assess the intended use, preserve Yale provenance and use the institutional credit line where applicable."
+  },
+  "evidence": [
+    {
+      "title": "Reuse, Permissions, and Copyright Policies",
+      "url": "https://library.yale.edu/policies/reuse",
+      "accessed_at": "2026-07-04"
+    },
+    {
+      "title": "Copyright and Permissions",
+      "url": "https://library.yale.edu/find-request-and-use/use/using-special-collections/copyright-and-permissions",
+      "accessed_at": "2026-07-04"
+    },
+    {
+      "title": "Permission to Publish Materials Held in Library Collections",
+      "url": "https://web.library.yale.edu/about/copyright/permission.html",
+      "accessed_at": "2026-07-04"
+    },
+    {
+      "title": "Voynich Manuscript",
+      "url": "https://beinecke.library.yale.edu/collections/highlights/voynich-manuscript",
+      "accessed_at": "2026-07-04"
+    }
+  ],
+  "status": "policy-documented-item-license-unspecified"
+}

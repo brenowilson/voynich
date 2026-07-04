@@ -72,10 +72,47 @@ All 213 canonical full-size Yale IIIF JPEG endpoints were streamed completely an
 - Detailed report: `reports/source-byte-verification.md`.
 
 ### Consequences
-- The downloader, sharding strategy and strict freeze validator have passed live institutional-source validation.
-- The complete byte identity of the current Yale JPEG representation is known.
-- CI discarded the downloaded images after hashing, so the result is verification-only.
-- `SOURCE-FREEZE-0001` remains blocked only by durable content-addressed retention and revalidation of the stored objects.
+- The downloader, sharding strategy and strict freeze validator passed live institutional-source validation.
+- The complete byte identity of the current Yale JPEG representation became known.
+- The initial CI run discarded downloaded images after hashing and was verification-only.
 
 ### Status
-Byte verification complete; durable freeze pending.
+Byte verification complete.
+
+## 2026-07-04 — SOURCE-FREEZE-0001 declared
+
+### Result
+The 213 canonical Yale image objects were retained in a durable content-addressed external store and independently revalidated after transfer.
+
+### Evidence
+- External archive objects: `16`.
+- Stored objects restored and rehashed: `213 / 213`.
+- Missing, duplicate or mismatched objects: `0`.
+- Total source-image bytes: `560,960,374`.
+- Frozen record-set SHA-256: `23b37de04ce9bb7cc6ef3920612418ef78a0bbfa4fa6107c04a32740456ad0e0`.
+- Stable frozen content-inventory SHA-256: `eadd4ee6ebe176b1de38cd48796966f819bffbe8d1e5ba0f8f05387fba1a5131`.
+- Freeze record: `sources/primary/freezes/SOURCE-FREEZE-0001.json`.
+- Merge commit: `ca5133568e90a5c6a2e15dc86422a095f8100042`.
+
+### Consequences
+- Primary-source byte identity is immutable and reconstructable from documented archives.
+- Image binaries remain outside Git history.
+- External transliterations remain excluded from the canonical source and observation layers.
+- Physical folio-side and foldout-panel modeling remains a separate unresolved task.
+
+### Status
+Frozen.
+
+## 2026-07-04 — Yale rights and reuse boundary documented
+
+### Decision
+Preserve the absence of an item-specific IIIF rights value and record Yale's institutional reuse policy without inventing a license.
+
+### Consequences
+- The repository does not assert a Creative Commons or other item-specific license.
+- The durable source store remains private and access-controlled.
+- Public reuse requires independent legal assessment, Yale provenance and the institutional credit line where applicable.
+- Rights evidence is recorded in `sources/primary/yale/rights.json`.
+
+### Status
+Accepted.
