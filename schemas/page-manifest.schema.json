@@ -1,19 +1,98 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/brenowilson/voynich/schemas/page-manifest.schema.json",
-  "title": "Page Manifest Record",
+  "title": "Canonical Yale Asset and Physical-Side Manifest Record",
   "type": "object",
-  "required": ["folio_id", "institutional_id", "source_sha256", "width_px", "height_px"],
+  "required": [
+    "schema_version",
+    "sequence_index",
+    "record_type",
+    "institutional_id",
+    "canvas_id",
+    "institutional_label",
+    "photographic_panel_id",
+    "folio_id",
+    "physical_parent_ids",
+    "side_relations",
+    "composition_status",
+    "candidate_type",
+    "reading_order",
+    "source_url",
+    "source_sha256",
+    "byte_count",
+    "width_px",
+    "height_px",
+    "stored_path",
+    "rights_record",
+    "rights_status",
+    "retrieved_at",
+    "notes"
+  ],
   "properties": {
-    "folio_id": {"type": "string"},
-    "institutional_id": {"type": "string"},
+    "schema_version": {"const": "0.2.0"},
+    "sequence_index": {"type": "integer", "minimum": 1},
+    "record_type": {"enum": ["manuscript_image", "support_view"]},
+    "institutional_id": {"type": "string", "pattern": "^[0-9]+$"},
+    "canvas_id": {"type": "string", "format": "uri"},
+    "institutional_label": {"type": "string"},
+    "photographic_panel_id": {"type": "string", "pattern": "^YDC-PANEL-[0-9]+$"},
+    "folio_id": {"type": ["string", "null"], "pattern": "^[0-9]+[rv]$"},
+    "physical_parent_ids": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[0-9]+[rv]$"},
+      "uniqueItems": true
+    },
+    "side_relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["side_id", "relation_index", "coverage", "basis"],
+        "properties": {
+          "side_id": {"type": "string", "pattern": "^[0-9]+[rv]$"},
+          "relation_index": {"type": "integer", "minimum": 1},
+          "coverage": {"enum": ["part", "full_or_unspecified"]},
+          "basis": {"const": "explicit_label_token"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "composition_status": {
+      "enum": ["single_side_or_unspecified", "composite_candidate", "support_view"]
+    },
+    "candidate_type": {"type": ["string", "null"]},
+    "reading_order": {"type": "null"},
     "source_url": {"type": "string", "format": "uri"},
-    "source_sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "byte_count": {"type": "integer", "minimum": 1},
     "width_px": {"type": "integer", "minimum": 1},
     "height_px": {"type": "integer", "minimum": 1},
-    "rights": {"type": ["string", "null"]},
+    "stored_path": {"type": "string", "pattern": "^sha256/[a-f0-9]{2}/[a-f0-9]{64}\\.jpg$"},
+    "rights_record": {"type": "string"},
+    "rights_status": {"type": "string"},
     "retrieved_at": {"type": ["string", "null"], "format": "date-time"},
     "notes": {"type": ["string", "null"]}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"record_type": {"const": "support_view"}}},
+      "then": {
+        "properties": {
+          "folio_id": {"type": "null"},
+          "physical_parent_ids": {"maxItems": 0},
+          "side_relations": {"maxItems": 0},
+          "composition_status": {"const": "support_view"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"record_type": {"const": "manuscript_image"}}},
+      "then": {
+        "properties": {
+          "physical_parent_ids": {"minItems": 1},
+          "side_relations": {"minItems": 1}
+        }
+      }
+    }
+  ],
   "additionalProperties": false
 }
