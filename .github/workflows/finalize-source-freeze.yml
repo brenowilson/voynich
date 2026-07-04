@@ -1,0 +1,158 @@
+name: Finalize SOURCE-FREEZE-0001
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/finalize-source-freeze.yml"
+      - "src/voynich/acquisition/freeze.py"
+      - "tests/unit/test_image_byte_freeze.py"
+      - "sources/primary/storage/SOURCE-FREEZE-0001-storage.json"
+      - "docs/protocols/source-store-replication.md"
+      - "reports/source-storage-audit.md"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  PYTHONPATH: src
+  MANIFEST_SHA256: c1f12b6ad256b91e1b5c8015c2107de1c2ff24e573f4524c53e8f4004bccfc23
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/finalize-source-freeze-0001
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependency
+        run: python -m pip install pytest
+
+      - name: Test freeze validation
+        run: pytest -q tests/unit/test_image_byte_freeze.py
+
+      - name: Download the 16 validated source chunks
+        uses: actions/download-artifact@v4
+        with:
+          pattern: drive-source-chunk-*
+          path: downloaded
+          merge-multiple: true
+          repository: brenowilson/voynich
+          run-id: 28719916670
+          github-token: ${{ github.token }}
+
+      - name: Restore the content-addressed source store
+        run: |
+          mkdir -p restored-store sources/primary/freezes sources/primary/checksums
+          for checksum in downloaded/source-store-chunk-*.tar.gz.sha256; do
+            (cd downloaded && sha256sum -c "$(basename "$checksum")")
+          done
+          for archive in downloaded/source-store-chunk-*.tar.gz; do
+            tar -C restored-store -xzf "$archive"
+          done
+
+      - name: Consolidate stored-object records
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          records = []
+          for path in Path("downloaded").glob("records-*.jsonl"):
+              records.extend(
+                  json.loads(line)
+                  for line in path.read_text(encoding="utf-8").splitlines()
+                  if line.strip()
+              )
+          records.sort(key=lambda row: (int(row["sequence_index"]), str(row["child_oid"])))
+          if len(records) != 213:
+              raise SystemExit(f"expected 213 records, found {len(records)}")
+          output = Path("sources/primary/yale/image-byte-records-stored.jsonl")
+          output.write_text(
+              "".join(
+                  json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+                  for row in records
+              ),
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Build frozen source record and rehash all 213 objects
+        run: |
+          python scripts/build_source_freeze.py \
+            --freeze-id SOURCE-FREEZE-0001 \
+            --assets sources/primary/yale/assets.jsonl \
+            --records sources/primary/yale/image-byte-records-stored.jsonl \
+            --manifest-sha256 "$MANIFEST_SHA256" \
+            --output sources/primary/freezes/SOURCE-FREEZE-0001.json \
+            --store-root restored-store
+          cat downloaded/source-store-chunk-*.tar.gz.sha256 | sort > \
+            sources/primary/checksums/source-store-shards.sha256
+
+      - name: Attach storage inventory to freeze record
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          freeze_path = Path("sources/primary/freezes/SOURCE-FREEZE-0001.json")
+          records_path = Path("sources/primary/yale/image-byte-records-stored.jsonl")
+          storage_path = Path("sources/primary/storage/SOURCE-FREEZE-0001-storage.json")
+          freeze = json.loads(freeze_path.read_text(encoding="utf-8"))
+          records = [json.loads(line) for line in records_path.read_text(encoding="utf-8").splitlines()]
+          stable = [
+              {
+                  key: row.get(key)
+                  for key in (
+                      "source_manifest_sha256",
+                      "sequence_index",
+                      "child_oid",
+                      "canvas_id",
+                      "representation",
+                      "source_url",
+                      "resolved_url",
+                      "sha256",
+                      "byte_count",
+                      "media_type",
+                      "stored_path",
+                  )
+              }
+              for row in records
+          ]
+          payload = ("\n".join(sorted(json.dumps(row, sort_keys=True, separators=(",", ":")) for row in stable)) + "\n").encode()
+          freeze["content_inventory_sha256"] = hashlib.sha256(payload).hexdigest()
+          freeze["storage_inventory_path"] = storage_path.as_posix()
+          freeze["stored_record_path"] = records_path.as_posix()
+          freeze["external_archive_count"] = 16
+          freeze["post_upload_verification"] = "213 objects; zero mismatches"
+          freeze_path.write_text(json.dumps(freeze, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+
+      - name: Validate final outputs
+        run: |
+          python -m json.tool sources/primary/freezes/SOURCE-FREEZE-0001.json >/dev/null
+          python -m json.tool sources/primary/storage/SOURCE-FREEZE-0001-storage.json >/dev/null
+          test "$(wc -l < sources/primary/yale/image-byte-records-stored.jsonl)" -eq 213
+          grep -q '"status": "frozen"' sources/primary/freezes/SOURCE-FREEZE-0001.json
+          grep -q '"stored_objects_verified": 213' sources/primary/freezes/SOURCE-FREEZE-0001.json
+
+      - name: Commit final freeze evidence
+        run: |
+          git config user.name "voynich-source-bot"
+          git config user.email "voynich-source-bot@users.noreply.github.com"
+          git add sources/primary/freezes/SOURCE-FREEZE-0001.json \
+                  sources/primary/yale/image-byte-records-stored.jsonl \
+                  sources/primary/checksums/source-store-shards.sha256
+          if ! git diff --cached --quiet; then
+            git commit -m "data: finalize SOURCE-FREEZE-0001"
+            git push origin HEAD:feature/finalize-source-freeze-0001
+          fi
