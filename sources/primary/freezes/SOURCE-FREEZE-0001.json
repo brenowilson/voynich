@@ -1,0 +1,25 @@
+{
+  "asset_inventory_path": "sources/primary/yale/assets.jsonl",
+  "byte_record_paths": [
+    "sources/primary/yale/image-byte-records-stored.jsonl"
+  ],
+  "content_inventory_sha256": "eadd4ee6ebe176b1de38cd48796966f819bffbe8d1e5ba0f8f05387fba1a5131",
+  "created_at": "2026-07-04T22:24:05+00:00",
+  "expected_assets": 213,
+  "external_archive_count": 16,
+  "freeze_id": "SOURCE-FREEZE-0001",
+  "institution": "Yale University Library / Beinecke Rare Book and Manuscript Library",
+  "post_upload_verification": "213 objects; zero mismatches",
+  "record_set_sha256": "23b37de04ce9bb7cc6ef3920612418ef78a0bbfa4fa6107c04a32740456ad0e0",
+  "representation": "iiif-full-jpeg",
+  "schema_version": "0.1.0",
+  "shelfmark": "Beinecke MS 408",
+  "source_manifest_sha256": "c1f12b6ad256b91e1b5c8015c2107de1c2ff24e573f4524c53e8f4004bccfc23",
+  "status": "frozen",
+  "storage_inventory_path": "sources/primary/storage/SOURCE-FREEZE-0001-storage.json",
+  "stored_bytes_required": true,
+  "stored_objects_verified": 213,
+  "stored_record_path": "sources/primary/yale/image-byte-records-stored.jsonl",
+  "total_bytes": 560960374,
+  "verified_records": 213
+}

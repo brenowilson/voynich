@@ -29,6 +29,16 @@ def utc_now() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat()
 
 
+def portable_path(path: Path, root: Path | None = None) -> str:
+    """Return a repository-portable path instead of a runner-specific absolute path."""
+    resolved = path.resolve()
+    base = (root or Path.cwd()).resolve()
+    try:
+        return resolved.relative_to(base).as_posix()
+    except ValueError:
+        return path.name
+
+
 def canonical_record_bytes(records: Iterable[dict[str, Any]]) -> bytes:
     normalized = [
         json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -127,6 +137,7 @@ def build_freeze(
     output_path: Path,
     require_stored_bytes: bool = True,
     store_root: Path | None = None,
+    path_root: Path | None = None,
 ) -> dict[str, Any]:
     records, summary = validate_records(
         assets_path=assets_path,
@@ -149,8 +160,8 @@ def build_freeze(
         "record_set_sha256": summary.record_set_sha256,
         "stored_objects_verified": summary.stored_objects_verified,
         "stored_bytes_required": require_stored_bytes,
-        "asset_inventory_path": assets_path.as_posix(),
-        "byte_record_paths": [path.as_posix() for path in record_paths],
+        "asset_inventory_path": portable_path(assets_path, path_root),
+        "byte_record_paths": [portable_path(path, path_root) for path in record_paths],
         "status": "frozen" if require_stored_bytes else "verification-only",
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)

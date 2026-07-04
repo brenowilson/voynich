@@ -1,0 +1,42 @@
+{
+  "archive_count": 16,
+  "archives": [
+    {"byte_count":30814395,"chunk_index":0,"file_name":"drive-source-chunk-0.zip","github_actions_artifact_id":8085501093,"provider":"google-drive","sha256":"39dc18ccf7841aee416b4d23e515fe477b1a596beb250b8f303d1ecbbdd0d8e7"},
+    {"byte_count":42679541,"chunk_index":1,"file_name":"drive-source-chunk-1.zip","github_actions_artifact_id":8085505017,"provider":"google-drive","sha256":"f0cf0a4480c79c23e2076e5c826ad0807534a1a61d61fa0a721e54ca205c3680"},
+    {"byte_count":35555674,"chunk_index":2,"file_name":"drive-source-chunk-2.zip","github_actions_artifact_id":8085502726,"provider":"google-drive","sha256":"9053bdb78783be864a913d8cb15936e1d3c8fc43e7cdd32413683bb86e2f534c"},
+    {"byte_count":40415944,"chunk_index":3,"file_name":"drive-source-chunk-3.zip","github_actions_artifact_id":8085502056,"provider":"google-drive","sha256":"361326654df699c3cf6659c5116828c1cfb31e2cde3a893e749ecc0dd1ebafca"},
+    {"byte_count":32289850,"chunk_index":4,"file_name":"drive-source-chunk-4.zip","github_actions_artifact_id":8085502976,"provider":"google-drive","sha256":"bfc4782a551d40bb998572c4aadd35d413cef4e95efe44558c4d1ad1bff7febb"},
+    {"byte_count":31092778,"chunk_index":5,"file_name":"drive-source-chunk-5.zip","github_actions_artifact_id":8085502283,"provider":"google-drive","sha256":"8d396df9db37cef3259830c9621d042d823e90ec2db8100e33c1361e1b50f868"},
+    {"byte_count":30266880,"chunk_index":6,"file_name":"drive-source-chunk-6.zip","github_actions_artifact_id":8085500690,"provider":"google-drive","sha256":"98cb6ed0843bc920235227949d7bc5398ed3b416ea55923c2d6123721c8f6524"},
+    {"byte_count":31554823,"chunk_index":7,"file_name":"drive-source-chunk-7.zip","github_actions_artifact_id":8085501601,"provider":"google-drive","sha256":"07843e1c0153b89ecb4125ba9cdb640e821c47db801fef4304cd5f4d6712cb79"},
+    {"byte_count":32009433,"chunk_index":8,"file_name":"drive-source-chunk-8.zip","github_actions_artifact_id":8085501633,"provider":"google-drive","sha256":"48f84aa5402896338c0f32ade11448c3d0d242f64bb181267b94d190ea20d515"},
+    {"byte_count":37838720,"chunk_index":9,"file_name":"drive-source-chunk-9.zip","github_actions_artifact_id":8085502137,"provider":"google-drive","sha256":"56e4aa6a0b49cdc145e7822452486c155362bdf5aea407a69f9a43b5ff0353de"},
+    {"byte_count":35175208,"chunk_index":10,"file_name":"drive-source-chunk-10.zip","github_actions_artifact_id":8085501421,"provider":"google-drive","sha256":"733497180069be2463b609ba4dd502fdedfa477fc7e0c595fb9f9a76158ae37f"},
+    {"byte_count":39037623,"chunk_index":11,"file_name":"drive-source-chunk-11.zip","github_actions_artifact_id":8085503070,"provider":"google-drive","sha256":"659de4984096daed83e2592648e3e67851cefb40ed7565713e11aec1ae7995ff"},
+    {"byte_count":31530878,"chunk_index":12,"file_name":"drive-source-chunk-12.zip","github_actions_artifact_id":8085503439,"provider":"google-drive","sha256":"048131cb9aad75d1fc86fdf13981f7a2c43933c7b810998ad89512625c1c3734"},
+    {"byte_count":45985964,"chunk_index":13,"file_name":"drive-source-chunk-13.zip","github_actions_artifact_id":8085503767,"provider":"google-drive","sha256":"9f3b24805e2affbc84b4f9389802fea7be2c2e322b4362353de1685759fa21c2"},
+    {"byte_count":30380514,"chunk_index":14,"file_name":"drive-source-chunk-14.zip","github_actions_artifact_id":8085504101,"provider":"google-drive","sha256":"d7849035e76021f998dcf348a6e6d71383bf330216dda48479f19564b16b351b"},
+    {"byte_count":32502152,"chunk_index":15,"file_name":"drive-source-chunk-15.zip","github_actions_artifact_id":8085501926,"provider":"google-drive","sha256":"5d08f62eb92d8b2f7ef4097611faf0fc4e7e4660ba74d1dacb3c6fd6d63989ac"}
+  ],
+  "evidence_object": {
+    "byte_count": 704,
+    "file_name": "drive-source-freeze-evidence.zip",
+    "sha256": "3b918f86030e35ddb47ef572c9e09d2b28f778838bc24618606ebc130a3acef5"
+  },
+  "folder_alias": "Voynich Source Store/SOURCE-FREEZE-0001/chunks-v1",
+  "freeze_id": "SOURCE-FREEZE-0001",
+  "post_upload_verification": {
+    "method": "Download every external object, compare SHA-256 with the originating GitHub Actions artifact, unpack all archives, verify internal archive checksums, reconstruct the content-addressed store and rehash every stored image object.",
+    "mismatches": 0,
+    "verified_archives": 16,
+    "verified_at": "2026-07-04T22:15:00Z",
+    "verified_stored_objects": 213
+  },
+  "provider": "Google Drive",
+  "schema_version": "0.1.0",
+  "source_workflow": {
+    "head_sha": "be6d43b0cc1011a6b676a2b4835872452fff8cbe",
+    "run_id": 28719916670
+  },
+  "storage_class": "private durable external object store"
+}
