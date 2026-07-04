@@ -1,0 +1,45 @@
+name: Materialize canonical page manifest
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/materialize-page-manifest.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/canonical-page-manifest
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build canonical outputs
+        run: |
+          python scripts/build_canonical_page_manifest.py \
+            --assets sources/primary/yale/assets.jsonl \
+            --byte-records sources/primary/yale/image-byte-records-stored.jsonl \
+            --relations sources/primary/manifests/asset-side-relations.csv \
+            --composites sources/primary/manifests/foldouts.csv \
+            --rights sources/primary/yale/rights.json \
+            --jsonl-output sources/primary/manifests/pages.jsonl \
+            --csv-output sources/primary/manifests/pages.csv
+      - name: Commit outputs
+        run: |
+          git config user.name "voynich-source-bot"
+          git config user.email "voynich-source-bot@users.noreply.github.com"
+          git add sources/primary/manifests/pages.jsonl sources/primary/manifests/pages.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "data: regenerate canonical page manifest"
+            git push origin HEAD:feature/canonical-page-manifest
+          fi
