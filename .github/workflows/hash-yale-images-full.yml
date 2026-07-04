@@ -1,0 +1,74 @@
+name: Hash all Yale image bytes
+
+on:
+  pull_request:
+    paths:
+      - ".full-hash-trigger"
+      - ".github/workflows/hash-yale-images-full.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+  MANIFEST_SHA256: c1f12b6ad256b91e1b5c8015c2107de1c2ff24e573f4524c53e8f4004bccfc23
+
+jobs:
+  hash:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Hash shard
+        run: |
+          mkdir -p byte-records .external-store
+          python scripts/acquire_image_bytes.py \
+            --assets sources/primary/yale/assets.jsonl \
+            --output byte-records/records-${{ matrix.shard }}.jsonl \
+            --store-root .external-store \
+            --manifest-sha256 "$MANIFEST_SHA256" \
+            --shard-index ${{ matrix.shard }} \
+            --shard-count 8 \
+            --discard-bytes
+      - uses: actions/upload-artifact@v4
+        with:
+          name: byte-records-${{ matrix.shard }}
+          path: byte-records/records-${{ matrix.shard }}.jsonl
+
+  verify:
+    needs: hash
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: byte-records-*
+          path: byte-records
+          merge-multiple: true
+      - name: Validate complete set
+        run: |
+          mkdir -p output
+          python scripts/build_source_freeze.py \
+            --freeze-id SOURCE-FREEZE-0001-VERIFICATION \
+            --assets sources/primary/yale/assets.jsonl \
+            --records byte-records/records-*.jsonl \
+            --manifest-sha256 "$MANIFEST_SHA256" \
+            --output output/SOURCE-FREEZE-0001-verification.json \
+            --verification-only
+          cat byte-records/records-*.jsonl | sort > output/image-byte-records.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source-freeze-0001-verification
+          path: output/
