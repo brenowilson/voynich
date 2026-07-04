@@ -4,7 +4,7 @@
     "sources/primary/yale/image-byte-records-stored.jsonl"
   ],
   "content_inventory_sha256": "eadd4ee6ebe176b1de38cd48796966f819bffbe8d1e5ba0f8f05387fba1a5131",
-  "created_at": "2026-07-04T22:21:58+00:00",
+  "created_at": "2026-07-04T22:24:05+00:00",
   "expected_assets": 213,
   "external_archive_count": 16,
   "freeze_id": "SOURCE-FREEZE-0001",
