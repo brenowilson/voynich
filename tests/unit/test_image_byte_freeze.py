@@ -70,11 +70,14 @@ def test_freeze_requires_complete_verified_inventory_and_stored_objects(tmp_path
         output_path=output,
         require_stored_bytes=True,
         store_root=store,
+        path_root=tmp_path,
     )
 
     assert freeze["status"] == "frozen"
     assert freeze["expected_assets"] == 2
     assert freeze["stored_objects_verified"] == 2
+    assert freeze["asset_inventory_path"] == "assets.jsonl"
+    assert freeze["byte_record_paths"] == ["records.jsonl"]
     assert output.is_file()
 
 
