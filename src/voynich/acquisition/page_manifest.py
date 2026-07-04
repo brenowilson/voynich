@@ -56,6 +56,15 @@ def load_rights_status(path: Path) -> str:
     return str(value["status"])
 
 
+def portable_path(path: Path, root: Path | None = None) -> str:
+    resolved = path.resolve()
+    base = (root or Path.cwd()).resolve()
+    try:
+        return resolved.relative_to(base).as_posix()
+    except ValueError:
+        return path.name
+
+
 def build_records(
     *,
     assets: list[dict[str, Any]],
@@ -225,13 +234,14 @@ def build_page_manifest(
     rights_path: Path,
     jsonl_output: Path,
     csv_output: Path,
+    path_root: Path | None = None,
 ) -> dict[str, int]:
     records = build_records(
         assets=read_jsonl(assets_path),
         byte_records=read_jsonl(byte_records_path),
         side_relations=read_csv(relations_path),
         composite_candidates=read_csv(composites_path),
-        rights_record_path=rights_path.as_posix(),
+        rights_record_path=portable_path(rights_path, path_root),
         rights_status=load_rights_status(rights_path),
     )
     write_jsonl(jsonl_output, records)
