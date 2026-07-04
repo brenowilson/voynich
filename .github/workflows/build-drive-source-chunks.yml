@@ -1,0 +1,86 @@
+name: Build Drive source chunks
+
+on:
+  pull_request:
+    paths:
+      - ".drive-chunks-trigger"
+      - ".github/workflows/build-drive-source-chunks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+  MANIFEST_SHA256: c1f12b6ad256b91e1b5c8015c2107de1c2ff24e573f4524c53e8f4004bccfc23
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        chunk: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Acquire chunk
+        run: |
+          mkdir -p source-store records package
+          python scripts/acquire_image_bytes.py \
+            --assets sources/primary/yale/assets.jsonl \
+            --output records/records-${{ matrix.chunk }}.jsonl \
+            --store-root source-store \
+            --manifest-sha256 "$MANIFEST_SHA256" \
+            --shard-index ${{ matrix.chunk }} \
+            --shard-count 16
+      - name: Package chunk
+        run: |
+          tar -C source-store -czf package/source-store-chunk-${{ matrix.chunk }}.tar.gz sha256
+          cd package
+          sha256sum source-store-chunk-${{ matrix.chunk }}.tar.gz > source-store-chunk-${{ matrix.chunk }}.tar.gz.sha256
+          cd ..
+          cp records/records-${{ matrix.chunk }}.jsonl package/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drive-source-chunk-${{ matrix.chunk }}
+          path: package/
+          compression-level: 0
+
+  verify:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: drive-source-chunk-*
+          path: downloaded
+      - name: Restore and verify
+        run: |
+          mkdir -p restored-store combined-records freeze-output
+          for directory in downloaded/drive-source-chunk-*; do
+            cd "$directory"
+            sha256sum -c *.sha256
+            cd ../..
+            tar -C restored-store -xzf "$directory"/*.tar.gz
+            cp "$directory"/records-*.jsonl combined-records/
+          done
+          python scripts/build_source_freeze.py \
+            --freeze-id SOURCE-FREEZE-0001 \
+            --assets sources/primary/yale/assets.jsonl \
+            --records combined-records/records-*.jsonl \
+            --manifest-sha256 "$MANIFEST_SHA256" \
+            --output freeze-output/SOURCE-FREEZE-0001.json \
+            --store-root restored-store
+      - uses: actions/upload-artifact@v4
+        with:
+          name: drive-source-freeze-evidence
+          path: freeze-output/
