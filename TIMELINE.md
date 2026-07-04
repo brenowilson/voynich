@@ -52,7 +52,30 @@ The official Yale IIIF manifest for Beinecke MS 408 was acquired and normalized 
 ### Consequences
 - The institutional IIIF manifest replaces the HolyBooks PDF as the canonical digital source index.
 - Institutional labels remain verbatim; physical folio and foldout relationships are not inferred silently.
-- Byte-level hashing of full-resolution image files remains pending before `SOURCE-FREEZE-0001` can be declared.
+- Byte-level verification and durable storage are required before `SOURCE-FREEZE-0001` can be declared.
 
 ### Status
 Validated; not frozen.
+
+## 2026-07-04 — Complete Yale image byte verification
+
+### Result
+All 213 canonical full-size Yale IIIF JPEG endpoints were streamed completely and hashed independently.
+
+### Evidence
+- Verified byte streams: `213 / 213`.
+- Unique child OIDs: `213`.
+- Unique image SHA-256 digests: `213`.
+- Total bytes streamed: `560,960,374`.
+- Stable content-inventory SHA-256: `b6898d67c062bd91e13a0b258c53195434deb7ba13c960554c57e24ab16cd975`.
+- GitHub Actions run: `28690625639`.
+- Detailed report: `reports/source-byte-verification.md`.
+
+### Consequences
+- The downloader, sharding strategy and strict freeze validator have passed live institutional-source validation.
+- The complete byte identity of the current Yale JPEG representation is known.
+- CI discarded the downloaded images after hashing, so the result is verification-only.
+- `SOURCE-FREEZE-0001` remains blocked only by durable content-addressed retention and revalidation of the stored objects.
+
+### Status
+Byte verification complete; durable freeze pending.
