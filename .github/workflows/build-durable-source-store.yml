@@ -44,7 +44,9 @@ jobs:
       - name: Package content-addressed shard
         run: |
           tar -C source-store -czf packages/source-store-shard-${{ matrix.shard }}.tar.gz sha256
-          sha256sum packages/source-store-shard-${{ matrix.shard }}.tar.gz > packages/source-store-shard-${{ matrix.shard }}.tar.gz.sha256
+          cd packages
+          sha256sum source-store-shard-${{ matrix.shard }}.tar.gz > source-store-shard-${{ matrix.shard }}.tar.gz.sha256
+          cd ..
           cp byte-records/records-${{ matrix.shard }}.jsonl packages/
       - name: Upload restorable shard
         uses: actions/upload-artifact@v4
@@ -69,8 +71,14 @@ jobs:
       - name: Restore all shards
         run: |
           mkdir -p restored-store combined-records freeze-output
-          find downloaded -name '*.tar.gz.sha256' -print0 | xargs -0 -n1 sh -c 'cd "$(dirname "$0")" && sha256sum -c "$(basename "$0")"'
-          find downloaded -name '*.tar.gz' -print0 | xargs -0 -n1 tar -C restored-store -xzf
+          while IFS= read -r -d '' checksum; do
+            directory="$(dirname "$checksum")"
+            filename="$(basename "$checksum")"
+            (cd "$directory" && sha256sum -c "$filename")
+          done < <(find downloaded -name '*.tar.gz.sha256' -print0)
+          while IFS= read -r -d '' archive; do
+            tar -C restored-store -xzf "$archive"
+          done < <(find downloaded -name '*.tar.gz' -print0)
           find downloaded -name 'records-*.jsonl' -exec cp {} combined-records/ \;
       - name: Validate stored objects and build freeze
         run: |
