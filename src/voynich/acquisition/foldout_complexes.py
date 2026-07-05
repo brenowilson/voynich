@@ -51,7 +51,7 @@ def side_number(side_id: str) -> int:
         raise FoldoutComplexError(f"invalid side identifier: {side_id}") from exc
 
 
-def validate_codiaology_profile(config: dict[str, Any]) -> None:
+def validate_codicology_profile(config: dict[str, Any]) -> None:
     totals = config.get("folding_leaf_totals")
     complexes = config.get("complexes")
     if not isinstance(totals, dict) or not isinstance(complexes, list):
@@ -92,8 +92,9 @@ def validate_codiaology_profile(config: dict[str, Any]) -> None:
         if complex_record.get("reading_order") is not None:
             raise FoldoutComplexError(f"reading order must remain null for {complex_id}")
 
-    for index, (lower, upper, complex_id) in enumerate(sorted(ranges)):
-        for other_lower, other_upper, other_id in sorted(ranges)[index + 1 :]:
+    ordered_ranges = sorted(ranges)
+    for index, (lower, upper, complex_id) in enumerate(ordered_ranges):
+        for other_lower, other_upper, other_id in ordered_ranges[index + 1 :]:
             if other_lower > upper:
                 break
             if lower <= other_upper and other_lower <= upper:
@@ -122,7 +123,7 @@ def normalize_profile(value: dict[str, Any]) -> dict[str, int]:
 def build_complexes(
     *, pages: list[dict[str, Any]], config: dict[str, Any]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
-    validate_codiaology_profile(config)
+    validate_codicology_profile(config)
 
     page_ids: set[str] = set()
     for page in pages:
