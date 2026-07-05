@@ -1,0 +1,330 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/observation-package.schema.json",
+  "title": "Voynich Source-Anchored Observation Package",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "protocol_id",
+    "package_id",
+    "package_status",
+    "source",
+    "coordinate_space",
+    "revision",
+    "annotator_id",
+    "regions",
+    "lines",
+    "glyph_candidates",
+    "ambiguity_groups",
+    "revision_events",
+    "external_transliterations_used",
+    "semantic_interpretation_used",
+    "reading_order_asserted"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "protocol_id": {"const": "OBSERVATION-PROTOCOL-0001"},
+    "package_id": {
+      "type": "string",
+      "pattern": "^OBS-PKG-YDC-PANEL-[0-9]+-R[0-9]{3}$"
+    },
+    "package_status": {"enum": ["blank", "draft", "frozen", "superseded"]},
+    "source": {"$ref": "#/$defs/source"},
+    "coordinate_space": {"$ref": "#/$defs/coordinate_space"},
+    "revision": {"$ref": "#/$defs/revision"},
+    "annotator_id": {"type": ["string", "null"], "pattern": "^OBS-[A-Z0-9-]+$"},
+    "regions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/region"}
+    },
+    "lines": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/line"}
+    },
+    "glyph_candidates": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/glyph"}
+    },
+    "ambiguity_groups": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/ambiguity_group"}
+    },
+    "revision_events": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/revision_event"}
+    },
+    "external_transliterations_used": {"const": false},
+    "semantic_interpretation_used": {"const": false},
+    "reading_order_asserted": {"const": false}
+  },
+  "$defs": {
+    "point": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "integer", "minimum": 0},
+        {"type": "integer", "minimum": 0}
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "polygon": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"$ref": "#/$defs/point"}
+    },
+    "polyline": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"$ref": "#/$defs/point"}
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "photographic_panel_id",
+        "institutional_id",
+        "institutional_label",
+        "source_url",
+        "source_sha256",
+        "stored_path",
+        "width_px",
+        "height_px"
+      ],
+      "properties": {
+        "photographic_panel_id": {"type": "string", "pattern": "^YDC-PANEL-[0-9]+$"},
+        "institutional_id": {"type": "string", "pattern": "^[0-9]+$"},
+        "institutional_label": {"type": "string"},
+        "source_url": {"type": "string", "format": "uri"},
+        "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "stored_path": {
+          "type": "string",
+          "pattern": "^sha256/[a-f0-9]{2}/[a-f0-9]{64}\\.jpg$"
+        },
+        "width_px": {"type": "integer", "minimum": 1},
+        "height_px": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "coordinate_space": {
+      "type": "object",
+      "required": ["origin", "x_axis", "y_axis", "units", "width_px", "height_px", "display_transforms"],
+      "properties": {
+        "origin": {"const": "top_left"},
+        "x_axis": {"const": "right"},
+        "y_axis": {"const": "down"},
+        "units": {"const": "source_pixels"},
+        "width_px": {"type": "integer", "minimum": 1},
+        "height_px": {"type": "integer", "minimum": 1},
+        "display_transforms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["transform_id", "purpose", "forward_affine", "inverse_affine"],
+            "properties": {
+              "transform_id": {"type": "string", "pattern": "^OBSTRANS-[A-Z0-9-]+$"},
+              "purpose": {"const": "display_only"},
+              "forward_affine": {
+                "type": "array",
+                "minItems": 6,
+                "maxItems": 6,
+                "items": {"type": "number"}
+              },
+              "inverse_affine": {
+                "type": "array",
+                "minItems": 6,
+                "maxItems": 6,
+                "items": {"type": "number"}
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "revision": {
+      "type": "object",
+      "required": ["revision_number", "supersedes_package_id", "created_at"],
+      "properties": {
+        "revision_number": {"type": "integer", "minimum": 0, "maximum": 999},
+        "supersedes_package_id": {
+          "type": ["string", "null"],
+          "pattern": "^OBS-PKG-YDC-PANEL-[0-9]+-R[0-9]{3}$"
+        },
+        "created_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "additionalProperties": false
+    },
+    "common_observation": {
+      "type": "object",
+      "required": ["confidence", "visibility", "observation_status", "evidence_note"],
+      "properties": {
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "visibility": {"enum": ["clear", "partial", "obscured", "damaged", "uncertain"]},
+        "observation_status": {"enum": ["active", "retired"]},
+        "evidence_note": {"type": ["string", "null"]}
+      }
+    },
+    "region": {
+      "type": "object",
+      "required": [
+        "region_id",
+        "role",
+        "polygon",
+        "confidence",
+        "visibility",
+        "observation_status",
+        "evidence_note"
+      ],
+      "properties": {
+        "region_id": {"type": "string", "pattern": "^OBSREG-YDC-PANEL-[0-9]+-[0-9]{4}$"},
+        "role": {
+          "enum": [
+            "text_bearing",
+            "graphic_bearing",
+            "mixed",
+            "unmarked_or_background",
+            "obscured_or_damaged",
+            "uncertain"
+          ]
+        },
+        "polygon": {"$ref": "#/$defs/polygon"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "visibility": {"enum": ["clear", "partial", "obscured", "damaged", "uncertain"]},
+        "observation_status": {"enum": ["active", "retired"]},
+        "evidence_note": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "line": {
+      "type": "object",
+      "required": [
+        "line_id",
+        "parent_region_id",
+        "polygon",
+        "baseline",
+        "orientation_degrees",
+        "confidence",
+        "visibility",
+        "observation_status",
+        "evidence_note"
+      ],
+      "properties": {
+        "line_id": {"type": "string", "pattern": "^OBSLINE-YDC-PANEL-[0-9]+-[0-9]{4}$"},
+        "parent_region_id": {"type": "string", "pattern": "^OBSREG-YDC-PANEL-[0-9]+-[0-9]{4}$"},
+        "polygon": {"$ref": "#/$defs/polygon"},
+        "baseline": {"oneOf": [{"$ref": "#/$defs/polyline"}, {"type": "null"}]},
+        "orientation_degrees": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "exclusiveMaximum": 360
+        },
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "visibility": {"enum": ["clear", "partial", "obscured", "damaged", "uncertain"]},
+        "observation_status": {"enum": ["active", "retired"]},
+        "evidence_note": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "glyph": {
+      "type": "object",
+      "required": [
+        "glyph_id",
+        "parent_region_id",
+        "parent_line_id",
+        "polygon",
+        "segmentation_state",
+        "confidence",
+        "visibility",
+        "observation_status",
+        "evidence_note"
+      ],
+      "properties": {
+        "glyph_id": {"type": "string", "pattern": "^OBSGLYPH-YDC-PANEL-[0-9]+-[0-9]{6}$"},
+        "parent_region_id": {"type": "string", "pattern": "^OBSREG-YDC-PANEL-[0-9]+-[0-9]{4}$"},
+        "parent_line_id": {
+          "type": ["string", "null"],
+          "pattern": "^OBSLINE-YDC-PANEL-[0-9]+-[0-9]{4}$"
+        },
+        "polygon": {"$ref": "#/$defs/polygon"},
+        "segmentation_state": {
+          "enum": [
+            "isolated_candidate",
+            "possible_join",
+            "possible_split",
+            "overlap",
+            "uncertain_boundary",
+            "not_fully_visible"
+          ]
+        },
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "visibility": {"enum": ["clear", "partial", "obscured", "damaged", "uncertain"]},
+        "observation_status": {"enum": ["active", "retired"]},
+        "evidence_note": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "ambiguity_group": {
+      "type": "object",
+      "required": [
+        "ambiguity_group_id",
+        "relation",
+        "member_entity_ids",
+        "resolution_status",
+        "preferred_entity_ids",
+        "evidence_note"
+      ],
+      "properties": {
+        "ambiguity_group_id": {"type": "string", "pattern": "^OBSAMB-YDC-PANEL-[0-9]+-[0-9]{4}$"},
+        "relation": {
+          "enum": ["mutually_exclusive", "possible_join", "possible_split", "overlap", "shared_uncertainty"]
+        },
+        "member_entity_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(OBSREG|OBSLINE|OBSGLYPH)-YDC-PANEL-[0-9]+-[0-9]{4,6}$"
+          }
+        },
+        "resolution_status": {"enum": ["unresolved", "resolved", "retained_uncertainty"]},
+        "preferred_entity_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string"}
+        },
+        "evidence_note": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "revision_event": {
+      "type": "object",
+      "required": [
+        "event_id",
+        "event_type",
+        "entity_kind",
+        "entity_id",
+        "actor_id",
+        "occurred_at",
+        "previous_entity_sha256",
+        "resulting_entity_sha256",
+        "reason",
+        "uncertainty_change"
+      ],
+      "properties": {
+        "event_id": {"type": "string", "pattern": "^OBSEVENT-YDC-PANEL-[0-9]+-[0-9]{6}$"},
+        "event_type": {"enum": ["add", "modify", "retire", "uncertainty_update"]},
+        "entity_kind": {"enum": ["region", "line", "glyph_candidate", "ambiguity_group"]},
+        "entity_id": {"type": "string"},
+        "actor_id": {"type": "string", "pattern": "^OBS-[A-Z0-9-]+$"},
+        "occurred_at": {"type": "string", "format": "date-time"},
+        "previous_entity_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "resulting_entity_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "reason": {"type": "string", "minLength": 1},
+        "uncertainty_change": {"enum": ["increased", "decreased", "unchanged", "not_applicable"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

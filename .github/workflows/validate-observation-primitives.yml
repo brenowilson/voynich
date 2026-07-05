@@ -1,0 +1,115 @@
+name: Validate observation primitives
+
+on:
+  pull_request:
+    paths:
+      - "docs/protocols/observation-primitives.md"
+      - "schemas/observation-package.schema.json"
+      - "schemas/observation-event.schema.json"
+      - "src/voynich/observation/**"
+      - "scripts/build_blank_observation_package.py"
+      - "tests/unit/test_observation_model.py"
+      - "corpus/templates/observation-package.example.json"
+      - ".github/workflows/validate-observation-primitives.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/protocols/observation-primitives.md"
+      - "schemas/observation-package.schema.json"
+      - "schemas/observation-event.schema.json"
+      - "src/voynich/observation/**"
+      - "scripts/build_blank_observation_package.py"
+      - "tests/unit/test_observation_model.py"
+      - "corpus/templates/observation-package.example.json"
+      - ".github/workflows/validate-observation-primitives.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install validation dependencies
+        run: python -m pip install pytest jsonschema
+
+      - name: Run observation unit tests
+        run: pytest -q tests/unit/test_observation_model.py
+
+      - name: Regenerate blank package example
+        run: |
+          python scripts/build_blank_observation_package.py \
+            --pages sources/primary/manifests/pages.jsonl \
+            --panel-id YDC-PANEL-1006094 \
+            --output /tmp/observation-package.example.json
+
+      - name: Confirm deterministic example
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          committed = json.loads(
+              Path("corpus/templates/observation-package.example.json").read_text(encoding="utf-8")
+          )
+          regenerated = json.loads(
+              Path("/tmp/observation-package.example.json").read_text(encoding="utf-8")
+          )
+          if committed != regenerated:
+              raise SystemExit("committed blank observation package is not deterministic")
+          PY
+
+      - name: Validate schemas and protocol invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator, FormatChecker
+          from voynich.observation.model import validate_package
+
+          package_schema = json.loads(
+              Path("schemas/observation-package.schema.json").read_text(encoding="utf-8")
+          )
+          event_schema = json.loads(
+              Path("schemas/observation-event.schema.json").read_text(encoding="utf-8")
+          )
+          package = json.loads(
+              Path("corpus/templates/observation-package.example.json").read_text(encoding="utf-8")
+          )
+
+          Draft202012Validator.check_schema(package_schema)
+          Draft202012Validator.check_schema(event_schema)
+          validator = Draft202012Validator(
+              package_schema,
+              format_checker=FormatChecker(),
+          )
+          errors = list(validator.iter_errors(package))
+          if errors:
+              raise SystemExit("; ".join(error.message for error in errors[:10]))
+
+          summary = validate_package(package)
+          assert summary["package_status"] == "blank"
+          assert summary["region_count"] == 0
+          assert summary["line_count"] == 0
+          assert summary["glyph_candidate_count"] == 0
+          assert package["source"]["source_sha256"] == (
+              "ab22d0c20cc0c4e754236a32960c650c7275ac9a51e0dd33c91060694cb6ac05"
+          )
+          assert package["coordinate_space"]["width_px"] == 2691
+          assert package["coordinate_space"]["height_px"] == 3739
+          assert package["external_transliterations_used"] is False
+          assert package["semantic_interpretation_used"] is False
+          assert package["reading_order_asserted"] is False
+          PY
