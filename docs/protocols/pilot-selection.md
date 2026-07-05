@@ -44,7 +44,7 @@ The candidate pool contains four metadata strata:
 1. every panel assigned to an institutionally explicit physical folding leaf;
 2. up to two deterministic representatives of each label-derived composite-candidate type;
 3. at least one representative of each foldout complex;
-4. two ordinary, non-foldout, non-composite manuscript images from each of eight sequence bins.
+4. up to two ordinary, non-foldout, non-composite manuscript images from each of eight sequence bins; when a bin contains fewer than two eligible records, every eligible record is retained and the shortfall is reported rather than filled from another bin.
 
 Within a stratum, ties are broken by SHA-256 ranking using the fixed seed `PILOT-0001`. The final candidate IDs are assigned after sorting by source sequence.
 
