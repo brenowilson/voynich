@@ -169,3 +169,26 @@ A metadata-only candidate pool was selected and frozen before any visual outcome
 
 ### Status
 Candidate pool frozen; blinded visual coding pending.
+
+## 2026-07-05 — OBSERVATION-PROTOCOL-0001 defined
+
+### Result
+The project gained a source-anchored, interpretation-neutral model for regions, line candidates, glyph candidates, ambiguity groups and revision events.
+
+### Evidence
+- Canonical coordinates use immutable Yale source-image pixels.
+- Region, line and glyph geometry is validated against source bounds and parent polygons.
+- Ambiguous splits, joins, overlaps and incomplete visibility are explicit states.
+- Neutral identifiers do not encode reading order or glyph identity.
+- Revision events preserve actor, time, reason and entity hashes.
+- JSON Schemas and deterministic validators reject transcription, transliteration, words, semantic labels, Currier classes, reading order and analytical labels.
+- A blank package for `YDC-PANEL-1006094` regenerates deterministically from the canonical page manifest.
+- Validation workflow run: `28750637731`.
+
+### Consequences
+- Phase 2 annotation infrastructure can advance while final pilot selection remains blocked on an unavailable independent reviewer.
+- Whole-panel pilot visual coding remains separate from source-anchored region and glyph observation.
+- Corrections require superseding revisions rather than silent mutation.
+
+### Status
+Protocol and validation infrastructure complete; production annotation packages not yet created.
