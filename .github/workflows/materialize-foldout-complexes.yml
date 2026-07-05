@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - ".github/workflows/materialize-foldout-complexes.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/materialize-foldout-complexes.yml"
   workflow_dispatch:
 
 permissions:
