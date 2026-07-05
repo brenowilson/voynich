@@ -89,10 +89,48 @@ jobs:
 
       - name: Confirm committed outputs are deterministic
         run: |
-          diff -u sources/primary/manifests/pages.jsonl /tmp/voynich-validation/pages.jsonl
-          diff -u sources/primary/manifests/pages.csv /tmp/voynich-validation/pages.csv
-          diff -u sources/primary/manifests/foldout-complexes.jsonl /tmp/voynich-validation/foldout-complexes.jsonl
-          diff -u sources/primary/manifests/foldout-panel-relations.csv /tmp/voynich-validation/foldout-panel-relations.csv
+          python - <<'PY'
+          import csv
+          import json
+          from pathlib import Path
+
+          def read_jsonl(path: str):
+              return [
+                  json.loads(line)
+                  for line in Path(path).read_text(encoding="utf-8").splitlines()
+                  if line.strip()
+              ]
+
+          def read_csv(path: str):
+              with Path(path).open(encoding="utf-8", newline="") as handle:
+                  return list(csv.DictReader(handle))
+
+          comparisons = [
+              (
+                  read_jsonl("sources/primary/manifests/pages.jsonl"),
+                  read_jsonl("/tmp/voynich-validation/pages.jsonl"),
+                  "pages.jsonl",
+              ),
+              (
+                  read_csv("sources/primary/manifests/pages.csv"),
+                  read_csv("/tmp/voynich-validation/pages.csv"),
+                  "pages.csv",
+              ),
+              (
+                  read_jsonl("sources/primary/manifests/foldout-complexes.jsonl"),
+                  read_jsonl("/tmp/voynich-validation/foldout-complexes.jsonl"),
+                  "foldout-complexes.jsonl",
+              ),
+              (
+                  read_csv("sources/primary/manifests/foldout-panel-relations.csv"),
+                  read_csv("/tmp/voynich-validation/foldout-panel-relations.csv"),
+                  "foldout-panel-relations.csv",
+              ),
+          ]
+          for committed, regenerated, name in comparisons:
+              if committed != regenerated:
+                  raise SystemExit(f"committed {name} differs from deterministic regeneration")
+          PY
 
       - name: Validate schemas and invariants
         run: |
