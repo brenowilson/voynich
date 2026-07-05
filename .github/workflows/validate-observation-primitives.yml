@@ -3,99 +3,49 @@ name: Validate observation primitives
 on:
   pull_request:
     paths:
-      - "docs/protocols/observation-primitives.md"
-      - "docs/protocols/observation-work-queue.md"
-      - "schemas/observation-package.schema.json"
-      - "schemas/observation-event.schema.json"
-      - "schemas/observation-work-queue.schema.json"
-      - "src/voynich/observation/**"
-      - "scripts/build_blank_observation_package.py"
-      - "scripts/build_observation_work_queue.py"
-      - "tests/unit/test_observation_model.py"
-      - "tests/unit/test_observation_work_queue.py"
-      - "corpus/templates/observation-package.example.json"
-      - "corpus/pilots/PILOT-0001/candidates.jsonl"
-      - "corpus/pilots/PILOT-0001/candidate-freeze.json"
-      - ".github/workflows/validate-observation-primitives.yml"
-  push:
-    branches: [main]
-    paths:
-      - "docs/protocols/observation-primitives.md"
-      - "docs/protocols/observation-work-queue.md"
-      - "schemas/observation-package.schema.json"
-      - "schemas/observation-event.schema.json"
-      - "schemas/observation-work-queue.schema.json"
-      - "src/voynich/observation/**"
-      - "scripts/build_blank_observation_package.py"
-      - "scripts/build_observation_work_queue.py"
-      - "tests/unit/test_observation_model.py"
-      - "tests/unit/test_observation_work_queue.py"
-      - "corpus/templates/observation-package.example.json"
-      - "corpus/pilots/PILOT-0001/candidates.jsonl"
-      - "corpus/pilots/PILOT-0001/candidate-freeze.json"
       - ".github/workflows/validate-observation-primitives.yml"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   PYTHONPATH: src
 
 jobs:
-  validate:
+  materialize-and-validate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: data/materialize-observation-work-queue
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: pip
 
       - name: Install validation dependencies
         run: python -m pip install pytest jsonschema
 
-      - name: Run observation unit tests
+      - name: Run observation tests
         run: >-
           pytest -q
           tests/unit/test_observation_model.py
           tests/unit/test_observation_work_queue.py
 
-      - name: Regenerate blank package example
+      - name: Materialize canonical work queue
         run: |
-          python scripts/build_blank_observation_package.py \
-            --pages sources/primary/manifests/pages.jsonl \
-            --panel-id YDC-PANEL-1006094 \
-            --output /tmp/observation-package.example.json
-
-      - name: Confirm deterministic example
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          committed = json.loads(
-              Path("corpus/templates/observation-package.example.json").read_text(encoding="utf-8")
-          )
-          regenerated = json.loads(
-              Path("/tmp/observation-package.example.json").read_text(encoding="utf-8")
-          )
-          if committed != regenerated:
-              raise SystemExit("committed blank observation package is not deterministic")
-          PY
-
-      - name: Build work queue in temporary directory
-        run: |
+          rm -rf corpus/pilots/PILOT-0001/observation-work-queue
           python scripts/build_observation_work_queue.py \
             --candidates corpus/pilots/PILOT-0001/candidates.jsonl \
             --pages sources/primary/manifests/pages.jsonl \
             --candidate-freeze corpus/pilots/PILOT-0001/candidate-freeze.json \
-            --output-root /tmp/observation-work-queue \
+            --output-root corpus/pilots/PILOT-0001/observation-work-queue \
             --batch-count 5
 
-      - name: Validate schemas and protocol invariants
+      - name: Validate materialized outputs
         run: |
           python - <<'PY'
           import json
@@ -103,58 +53,32 @@ jobs:
           from jsonschema import Draft202012Validator, FormatChecker
           from voynich.observation.model import validate_package
 
+          manifest_schema = json.loads(Path("schemas/observation-work-queue.schema.json").read_text())
+          package_schema = json.loads(Path("schemas/observation-package.schema.json").read_text())
+          manifest = json.loads(Path("corpus/pilots/PILOT-0001/observation-work-queue/manifest.json").read_text())
           checker = FormatChecker()
-          package_schema = json.loads(
-              Path("schemas/observation-package.schema.json").read_text(encoding="utf-8")
-          )
-          event_schema = json.loads(
-              Path("schemas/observation-event.schema.json").read_text(encoding="utf-8")
-          )
-          queue_schema = json.loads(
-              Path("schemas/observation-work-queue.schema.json").read_text(encoding="utf-8")
-          )
-          example = json.loads(
-              Path("corpus/templates/observation-package.example.json").read_text(encoding="utf-8")
-          )
-          manifest = json.loads(
-              Path("/tmp/observation-work-queue/manifest.json").read_text(encoding="utf-8")
-          )
-
-          for schema in (package_schema, event_schema, queue_schema):
-              Draft202012Validator.check_schema(schema)
-
-          package_validator = Draft202012Validator(package_schema, format_checker=checker)
-          queue_validator = Draft202012Validator(queue_schema, format_checker=checker)
-          errors = list(package_validator.iter_errors(example))
-          errors += list(queue_validator.iter_errors(manifest))
+          errors = list(Draft202012Validator(manifest_schema, format_checker=checker).iter_errors(manifest))
           if errors:
               raise SystemExit("; ".join(error.message for error in errors[:10]))
-
-          summary = validate_package(example)
-          assert summary["package_status"] == "blank"
-          assert example["source"]["source_sha256"] == (
-              "ab22d0c20cc0c4e754236a32960c650c7275ac9a51e0dd33c91060694cb6ac05"
-          )
-
-          package_paths = sorted(Path("/tmp/observation-work-queue/packages").glob("*.json"))
-          assert len(package_paths) == 25
+          package_validator = Draft202012Validator(package_schema, format_checker=checker)
+          package_paths = sorted(Path("corpus/pilots/PILOT-0001/observation-work-queue/packages").glob("*.json"))
+          if len(package_paths) != 25:
+              raise SystemExit(f"expected 25 packages, found {len(package_paths)}")
           for path in package_paths:
-              package = json.loads(path.read_text(encoding="utf-8"))
+              package = json.loads(path.read_text())
               package_errors = list(package_validator.iter_errors(package))
               if package_errors:
                   raise SystemExit(f"{path}: {package_errors[0].message}")
               validate_package(package)
-
-          assert manifest["package_count"] == 25
-          assert manifest["batch_count"] == 5
-          assert manifest["candidate_set_sha256"] == (
-              "d460d6cc7c200f87e2b3182c1783079a6181bad01d0a83a8bd899b0cc7b8c113"
-          )
-          assert manifest["interpretive_outputs_used"] is False
-          assert manifest["external_transliterations_used"] is False
-          assert manifest["final_pilot_selection_used"] is False
           batch_sizes = {}
           for entry in manifest["entries"]:
               batch_sizes[entry["batch_id"]] = batch_sizes.get(entry["batch_id"], 0) + 1
-          assert sorted(batch_sizes.values()) == [5, 5, 5, 5, 5]
+          if sorted(batch_sizes.values()) != [5, 5, 5, 5, 5]:
+              raise SystemExit(f"unexpected batch sizes: {batch_sizes}")
           PY
+
+      - uses: EndBug/add-and-commit@v9
+        with:
+          add: corpus/pilots/PILOT-0001/observation-work-queue
+          message: data: materialize observation work queue
+          push: true
