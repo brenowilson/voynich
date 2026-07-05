@@ -63,9 +63,13 @@ def test_manifest_preserves_simple_composite_and_support_assets() -> None:
     )
 
     simple, composite, support = records
+    assert simple["schema_version"] == "0.2.1"
     assert simple["folio_id"] == "1r"
     assert simple["physical_parent_ids"] == ["1r"]
     assert simple["composition_status"] == "single_side_or_unspecified"
+    assert simple["source_filename"] is None
+    assert simple["source_filename_status"] == "not_supplied_by_iiif_manifest"
+    assert simple["acquisition_status"] == "verified"
 
     assert composite["folio_id"] is None
     assert composite["physical_parent_ids"] == ["69v", "70r"]
