@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/observation-event.schema.json",
+  "title": "Voynich Observation Revision Event",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "entity_kind",
+    "entity_id",
+    "actor_id",
+    "occurred_at",
+    "previous_entity_sha256",
+    "resulting_entity_sha256",
+    "reason",
+    "uncertainty_change"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^OBSEVENT-YDC-PANEL-[0-9]+-[0-9]{6}$"},
+    "event_type": {"enum": ["add", "modify", "retire", "uncertainty_update"]},
+    "entity_kind": {"enum": ["region", "line", "glyph_candidate", "ambiguity_group"]},
+    "entity_id": {"type": "string"},
+    "actor_id": {"type": "string", "pattern": "^OBS-[A-Z0-9-]+$"},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "previous_entity_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "resulting_entity_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "reason": {"type": "string", "minLength": 1},
+    "uncertainty_change": {"enum": ["increased", "decreased", "unchanged", "not_applicable"]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"event_type": {"const": "add"}}},
+      "then": {
+        "properties": {
+          "previous_entity_sha256": {"type": "null"},
+          "resulting_entity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "retire"}}},
+      "then": {
+        "properties": {
+          "previous_entity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "resulting_entity_sha256": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"event_type": {"enum": ["modify", "uncertainty_update"]}}},
+      "then": {
+        "properties": {
+          "previous_entity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "resulting_entity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
