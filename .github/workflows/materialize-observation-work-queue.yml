@@ -1,0 +1,33 @@
+name: Materialize observation work queue data
+
+on:
+  push:
+    branches:
+      - data/materialize-observation-work-queue
+    paths:
+      - ".github/workflows/materialize-observation-work-queue.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data/materialize-observation-work-queue
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python scripts/build_observation_work_queue.py --output-root corpus/pilots/PILOT-0001/observation-work-queue
+      - uses: EndBug/add-and-commit@v9
+        with:
+          add: corpus/pilots/PILOT-0001/observation-work-queue
+          message: data: materialize observation work queue
+          push: true
