@@ -76,6 +76,10 @@ corpus/pilots/PILOT-0001/observation-work-queue/packages/*.json
 
 The manifest records candidate, panel, package, source and batch identifiers together with SHA-256 digests.
 
+## Materialization boundary
+
+Materialization creates only revision-zero blank packages and the queue manifest. It does not promote a candidate into the final pilot and does not authorize annotation results, glyph identities, token boundaries or reading-order claims.
+
 ## Reproduction
 
 ```text
