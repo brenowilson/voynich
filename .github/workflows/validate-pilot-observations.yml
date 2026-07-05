@@ -1,0 +1,112 @@
+name: Validate PILOT-0001 visual observations
+
+on:
+  pull_request:
+    paths:
+      - "src/voynich/pilot/observations.py"
+      - "scripts/build_pilot_primary_checkpoint.py"
+      - "schemas/pilot-visual-observation.schema.json"
+      - "tests/unit/test_pilot_observations.py"
+      - "corpus/pilots/PILOT-0001/candidates.jsonl"
+      - "corpus/pilots/PILOT-0001/candidate-freeze.json"
+      - "corpus/pilots/PILOT-0001/visual-observations.jsonl"
+      - "corpus/pilots/PILOT-0001/primary-observation-checkpoint.json"
+      - "reports/pilot-primary-visual-coding.md"
+      - ".github/workflows/validate-pilot-observations.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/voynich/pilot/observations.py"
+      - "scripts/build_pilot_primary_checkpoint.py"
+      - "schemas/pilot-visual-observation.schema.json"
+      - "tests/unit/test_pilot_observations.py"
+      - "corpus/pilots/PILOT-0001/visual-observations.jsonl"
+      - "corpus/pilots/PILOT-0001/primary-observation-checkpoint.json"
+      - ".github/workflows/validate-pilot-observations.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install validation dependencies
+        run: python -m pip install pytest jsonschema
+
+      - name: Run observation unit tests
+        run: pytest -q tests/unit/test_pilot_observations.py
+
+      - name: Validate visual-observation schema
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator, FormatChecker
+
+          schema = json.loads(Path("schemas/pilot-visual-observation.schema.json").read_text())
+          observations = [
+              json.loads(line)
+              for line in Path("corpus/pilots/PILOT-0001/visual-observations.jsonl").read_text().splitlines()
+              if line.strip()
+          ]
+          validator = Draft202012Validator(schema, format_checker=FormatChecker())
+          errors = [error for row in observations for error in validator.iter_errors(row)]
+          if errors:
+              raise SystemExit("; ".join(error.message for error in errors[:10]))
+          if len(observations) != 25:
+              raise SystemExit(f"expected 25 primary observations, found {len(observations)}")
+          PY
+
+      - name: Rebuild primary checkpoint
+        run: |
+          python scripts/build_pilot_primary_checkpoint.py \
+            --candidates corpus/pilots/PILOT-0001/candidates.jsonl \
+            --observations corpus/pilots/PILOT-0001/visual-observations.jsonl \
+            --candidate-freeze corpus/pilots/PILOT-0001/candidate-freeze.json \
+            --output /tmp/primary-observation-checkpoint.json
+
+      - name: Confirm checkpoint and invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          committed = json.loads(
+              Path("corpus/pilots/PILOT-0001/primary-observation-checkpoint.json").read_text()
+          )
+          regenerated = json.loads(Path("/tmp/primary-observation-checkpoint.json").read_text())
+          if committed != regenerated:
+              raise SystemExit("committed primary checkpoint differs from deterministic validation")
+
+          assert committed["checkpoint_id"] == "PILOT-PRIMARY-OBSERVATIONS-0001"
+          assert committed["status"] == "primary-complete-independent-review-pending"
+          assert committed["candidate_count"] == 25
+          assert committed["observation_count"] == 25
+          assert committed["primary_pass_count"] == 25
+          assert committed["independent_second_pass_count"] == 0
+          assert committed["adjudicated_pass_count"] == 0
+          assert committed["observer_count"] == 1
+          assert committed["observer_ids"] == ["OBS-AI-PRIMARY-01"]
+          assert committed["observation_set_sha256"] == (
+              "c58d8efa52ea95ad0a6b99116250d32ef3ff4714642244ee9c4c18aec6f4f18d"
+          )
+          assert committed["minimum_confidence"] == 0.88
+          assert committed["below_adjudication_threshold"] == 0
+          assert committed["independent_review_required"] is True
+          assert committed["final_selection_authorized"] is False
+          assert committed["external_transliterations_used"] is False
+          assert committed["semantic_sections_used"] is False
+          PY

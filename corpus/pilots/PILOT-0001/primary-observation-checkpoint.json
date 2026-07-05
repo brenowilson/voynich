@@ -1,0 +1,27 @@
+{
+  "adjudicated_pass_count": 0,
+  "adjudication_required_after_disagreement": true,
+  "below_adjudication_threshold": 0,
+  "candidate_count": 25,
+  "candidate_set_sha256": "d460d6cc7c200f87e2b3182c1783079a6181bad01d0a83a8bd899b0cc7b8c113",
+  "checkpoint_id": "PILOT-PRIMARY-OBSERVATIONS-0001",
+  "external_transliterations_used": false,
+  "final_selection_authorized": false,
+  "independent_review_required": true,
+  "independent_second_pass_count": 0,
+  "maximum_confidence": 0.96,
+  "minimum_confidence": 0.88,
+  "observation_count": 25,
+  "observation_set_sha256": "c58d8efa52ea95ad0a6b99116250d32ef3ff4714642244ee9c4c18aec6f4f18d",
+  "observer_count": 1,
+  "observer_ids": [
+    "OBS-AI-PRIMARY-01"
+  ],
+  "pilot_id": "PILOT-0001",
+  "primary_pass_count": 25,
+  "schema_version": "0.1.0",
+  "selection_protocol": "docs/protocols/pilot-selection.md",
+  "semantic_sections_used": false,
+  "status": "primary-complete-independent-review-pending",
+  "visual_observation_schema": "schemas/pilot-visual-observation.schema.json"
+}
