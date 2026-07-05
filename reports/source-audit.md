@@ -50,19 +50,70 @@ All 213 image byte streams are non-empty and have distinct SHA-256 values.
 
 The canonical inventory includes nine binding or support views, including covers, inside covers, back flyleaf, head, tail, fore-edge and spine. They remain part of the primary-source freeze but are explicitly separated from manuscript-side observations.
 
-## Foldouts and composite photographs
+## Canonical page and side manifest
 
-A Yale canvas is not necessarily equivalent to a single physical folio side. Composite and partial labels include:
+The canonical page layer contains **213 deterministic records**. Each record links one institutional image asset to:
 
-- `69v and 70r`;
-- two separate `70v (part)` assets;
-- `71v and 72r` and two `72v (part)` assets;
-- the multi-image `85–86` foldout group;
-- `88v and 89r`, `89v (part)` and `89v (part) and 90r`;
-- `94v and 95r` plus `95v (part)`;
-- `100v and 101r`, `101v (part) and 102r` and two `102v (part)` assets.
+- its neutral photographic panel ID;
+- zero, one or several explicit physical-side parents;
+- source dimensions, byte count and SHA-256;
+- stored-object path and rights status;
+- composition status and uncertainty state.
 
-The current relation tables extract only folio-side tokens explicitly present in Yale labels. They do not infer reading order, adjacency, missing leaves or foldout geometry. The definitive physical-side and panel model remains tracked by issue #2.
+Nine records are support views. The remaining 204 are manuscript-image records. The model never treats PDF page numbering as evidence and never promotes image sequence to physical or reading order.
+
+The machine-readable outputs are:
+
+- `sources/primary/manifests/pages.jsonl`;
+- `sources/primary/manifests/pages.csv`;
+- `sources/primary/manifests/asset-side-relations.csv`;
+- `schemas/page-manifest.schema.json`.
+
+## Foldout evidence
+
+The Yale physical description reports ten folding leaves in total:
+
+- five double-folio leaves;
+- three triple-folio leaves;
+- one quadruple-folio leaf;
+- one sextuple-folio leaf.
+
+The institutional collation places them in quires IX, X, XI, XIV, XV, XVI and XVII. The project records this evidence in `sources/primary/yale/foldout-codicology.json`.
+
+The canonical foldout layer contains:
+
+- **7 quire-level foldout complexes**;
+- **10 physical folding-leaf slots** matching the institutional totals;
+- **40 photographic-panel relations**;
+- all **21 label-derived composite or fragmented candidates**;
+- **4 panels** assigned directly to the explicitly identified 85–86 sextuple leaf;
+- no asserted reading order.
+
+The outputs are:
+
+- `sources/primary/manifests/foldout-complexes.jsonl`;
+- `sources/primary/manifests/foldout-panel-relations.csv`;
+- `sources/primary/manifests/foldouts.csv` for the earlier label-derived candidate layer;
+- `schemas/foldout-complex.schema.json`.
+
+## Foldout uncertainty boundary
+
+A foldout complex is a codicological evidence container, not a reconstructed reading sequence.
+
+For quire XIV, the institutional catalog explicitly identifies folios 85r–86v as one sextuple-folio folding leaf. The four corresponding Yale photographic panels are therefore linked to one physical-leaf slot. Their internal panel order remains unresolved.
+
+For quires IX, XV and XVII, the catalog states that more than one folding leaf is present. The project creates the correct number and extent of physical-leaf slots but does not assign individual photographs to those slots when the institutional labels and collation do not uniquely determine the split.
+
+For quires X, XI and XVI, the quire-level folding-leaf profile is known, but digital panels are not silently assigned to the physical leaf merely because they occur within the folio range.
+
+The following are explicitly false in the canonical model:
+
+- asset sequence equals reading order;
+- pixel width equals physical leaf extent;
+- a side token describes complete foldout geometry;
+- overlapping photographed labels uniquely identify physical-leaf membership.
+
+Unresolved assignments remain empty rather than being guessed.
 
 ## Image geometry and byte identity
 
@@ -90,9 +141,10 @@ The project therefore records a policy-based assessment, not an item-specific li
 
 - The supplied HolyBooks PDF is retained only as a non-canonical access facsimile.
 - PDF page numbering is not a source identifier.
-- External transliterations, Currier classifications and third-party segmentations did not inform acquisition or source freezing.
+- External transliterations, Currier classifications and third-party segmentations did not inform acquisition, folio modeling or source freezing.
 - No semantic, linguistic or glyph-identity claim is encoded in the primary-source inventory.
+- No unresolved foldout geometry is converted into a reading-order claim.
 
-## Remaining source-layer work
+## Source-layer conclusion
 
-The acquisition objective is complete. The remaining source-layer task is issue #2: construct and validate the canonical many-to-many model linking institutional assets, physical folio sides and photographed foldout panels without guessing reading order.
+The canonical source, page, side, panel and foldout-complex layers are now machine-readable, deterministic and testable. Remaining geometric questions are preserved as explicit unresolved states rather than treated as blockers or silently guessed.
