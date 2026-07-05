@@ -22,17 +22,14 @@ def page(
         "photographic_panel_id": f"YDC-PANEL-{oid}",
         "physical_parent_ids": side_ids,
         "side_relations": [
-            {
-                "side_id": side_id,
-                "coverage": "full_or_unspecified",
-            }
+            {"side_id": side_id, "coverage": "full_or_unspecified"}
             for side_id in side_ids
         ],
         "composition_status": "composite_candidate" if candidate else "single_side_or_unspecified",
     }
 
 
-def config(*, reading_order=None) -> dict:
+def config(*, reading_order=None, assignment_status="quire_profile_supported") -> dict:
     return {
         "source_url": "https://example.org/catalog",
         "evidence_scope": "institutional collation",
@@ -54,7 +51,7 @@ def config(*, reading_order=None) -> dict:
                     "quadruple": 0,
                     "sextuple": 0,
                 },
-                "assignment_status": "quire_profile_supported",
+                "assignment_status": assignment_status,
                 "geometry_status": "panel_geometry_unresolved",
                 "reading_order": reading_order,
                 "evidence_note": "one double folding leaf",
@@ -76,12 +73,41 @@ def test_builds_complex_and_panel_relations_without_reading_order() -> None:
         "panel_relation_count": 3,
         "label_candidate_panel_count": 1,
         "folding_leaf_count": 1,
+        "explicitly_assigned_panel_count": 0,
     }
     assert complexes[0]["side_ids"] == ["93r", "94v", "95r", "96v"]
     assert complexes[0]["reading_order"] is None
-    assert complexes[0]["panel_count"] == 3
+    assert complexes[0]["folding_leaf_count"] == 1
+    assert complexes[0]["physical_leaf_slots"] == [
+        {
+            "physical_leaf_id": "MS408-Q16-FOLDOUT-LEAF-DOUBLE-01",
+            "extent": "double",
+            "panel_assignment_status": "unresolved",
+        }
+    ]
     assert all(row["reading_order"] == "" for row in relations)
     assert all(row["physical_leaf_id"] == "" for row in relations)
+
+
+def test_assigns_all_panels_only_when_single_leaf_is_institutionally_explicit() -> None:
+    pages = [
+        page(1, "1001", ["93r"], candidate=True),
+        page(2, "1002", ["93v"], candidate=True),
+    ]
+    complexes, relations, summary = build_complexes(
+        pages=pages,
+        config=config(assignment_status="institutionally_explicit"),
+    )
+
+    leaf_id = "MS408-Q16-FOLDOUT-LEAF-DOUBLE-01"
+    assert complexes[0]["physical_leaf_slots"][0]["panel_assignment_status"] == (
+        "all_complex_panels_assigned"
+    )
+    assert {row["physical_leaf_id"] for row in relations} == {leaf_id}
+    assert {row["physical_leaf_assignment_status"] for row in relations} == {
+        "all_complex_panels_assigned"
+    }
+    assert summary["explicitly_assigned_panel_count"] == 2
 
 
 def test_rejects_catalog_total_mismatch() -> None:
