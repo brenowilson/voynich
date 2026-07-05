@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/pilot-candidate.schema.json",
+  "title": "PILOT-0001 Candidate Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "pilot_id",
+    "candidate_id",
+    "photographic_panel_id",
+    "institutional_id",
+    "institutional_label",
+    "sequence_index",
+    "source_sequence_bin",
+    "source_url",
+    "source_sha256",
+    "byte_count",
+    "width_px",
+    "height_px",
+    "stored_path",
+    "physical_parent_ids",
+    "composition_status",
+    "candidate_type",
+    "foldout_complex_ids",
+    "physical_leaf_ids",
+    "selection_strata",
+    "selection_reasons",
+    "visual_review_status",
+    "external_transliteration_consulted"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "pilot_id": {"const": "PILOT-0001"},
+    "candidate_id": {"type": "string", "pattern": "^PILOT-0001-CAND-[0-9]{3}$"},
+    "photographic_panel_id": {"type": "string", "pattern": "^YDC-PANEL-[0-9]+$"},
+    "institutional_id": {"type": "string", "pattern": "^[0-9]+$"},
+    "institutional_label": {"type": "string"},
+    "sequence_index": {"type": "integer", "minimum": 1},
+    "source_sequence_bin": {"type": "integer", "minimum": 1, "maximum": 8},
+    "source_url": {"type": "string", "format": "uri"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "byte_count": {"type": "integer", "minimum": 1},
+    "width_px": {"type": "integer", "minimum": 1},
+    "height_px": {"type": "integer", "minimum": 1},
+    "stored_path": {"type": "string", "pattern": "^sha256/[a-f0-9]{2}/[a-f0-9]{64}\\.jpg$"},
+    "physical_parent_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[0-9]+[rv]$"}
+    },
+    "composition_status": {"enum": ["single_side_or_unspecified", "composite_candidate"]},
+    "candidate_type": {"type": ["string", "null"]},
+    "foldout_complex_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^MS408-Q[0-9]{2}-FOLDOUT-COMPLEX$"}
+    },
+    "physical_leaf_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^MS408-Q[0-9]{2}-FOLDOUT-LEAF-(DOUBLE|TRIPLE|QUADRUPLE|SEXTUPLE)-[0-9]{2}$"
+      }
+    },
+    "selection_strata": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "selection_reasons": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "visual_review_status": {"const": "pending"},
+    "external_transliteration_consulted": {"const": false}
+  },
+  "additionalProperties": false
+}

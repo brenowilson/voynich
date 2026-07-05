@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/pilot-visual-observation.schema.json",
+  "title": "Blinded PILOT-0001 Visual Observation",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "pilot_id",
+    "candidate_id",
+    "photographic_panel_id",
+    "source_sha256",
+    "observer_id",
+    "review_pass",
+    "reviewed_at",
+    "text_coverage",
+    "graphic_coverage",
+    "dominant_graphic_geometry",
+    "line_organization",
+    "visual_density",
+    "color_presence",
+    "source_quality",
+    "crop_or_occlusion",
+    "confidence",
+    "semantic_section_assignment",
+    "external_transliteration_consulted",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "pilot_id": {"const": "PILOT-0001"},
+    "candidate_id": {"type": "string", "pattern": "^PILOT-0001-CAND-[0-9]{3}$"},
+    "photographic_panel_id": {"type": "string", "pattern": "^YDC-PANEL-[0-9]+$"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "observer_id": {"type": "string", "pattern": "^OBS-[A-Z0-9-]+$"},
+    "review_pass": {"enum": ["primary", "independent_second", "adjudicated"]},
+    "reviewed_at": {"type": "string", "format": "date-time"},
+    "text_coverage": {"enum": ["none", "low", "medium", "high", "dominant", "uncertain"]},
+    "graphic_coverage": {"enum": ["none", "low", "medium", "high", "dominant", "uncertain"]},
+    "dominant_graphic_geometry": {
+      "enum": [
+        "none",
+        "organic_branched",
+        "circular_radial",
+        "container_network",
+        "human_figure_cluster",
+        "mixed",
+        "other_observable",
+        "uncertain"
+      ]
+    },
+    "line_organization": {"enum": ["none", "clear", "ambiguous", "mixed", "uncertain"]},
+    "visual_density": {"enum": ["sparse", "moderate", "dense", "very_dense", "uncertain"]},
+    "color_presence": {"enum": ["none", "limited", "substantial", "uncertain"]},
+    "source_quality": {"enum": ["good", "limited", "problematic", "uncertain"]},
+    "crop_or_occlusion": {"enum": ["none", "present", "uncertain"]},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "semantic_section_assignment": {"type": "null"},
+    "external_transliteration_consulted": {"const": false},
+    "notes": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

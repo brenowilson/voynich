@@ -1,0 +1,16 @@
+{
+  "candidate_count": 25,
+  "candidate_set_sha256": "d460d6cc7c200f87e2b3182c1783079a6181bad01d0a83a8bd899b0cc7b8c113",
+  "external_transliterations_used": false,
+  "foldout_relations_path": "sources/primary/manifests/foldout-panel-relations.csv",
+  "foldout_relations_sha256": "1a3780983c36a7effbac5f7096d73d48fcb2f1fbd907537c01c32225d7ce1be5",
+  "freeze_id": "PILOT-CANDIDATES-FREEZE-0001",
+  "pilot_id": "PILOT-0001",
+  "schema_version": "0.1.0",
+  "selection_protocol_path": "docs/protocols/pilot-selection.md",
+  "selection_seed": "PILOT-0001",
+  "source_page_manifest_path": "sources/primary/manifests/pages.jsonl",
+  "source_page_manifest_sha256": "d88751f473a9e4dc869f95ca4241efe133e9db071c5afdc14058e1eceda00410",
+  "status": "frozen",
+  "visual_outcomes_used": false
+}

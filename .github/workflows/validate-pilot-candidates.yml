@@ -1,0 +1,155 @@
+name: Validate PILOT-0001 candidate freeze
+
+on:
+  pull_request:
+    paths:
+      - "docs/protocols/pilot-selection.md"
+      - "src/voynich/pilot/**"
+      - "scripts/build_pilot_candidate_pool.py"
+      - "schemas/pilot-candidate.schema.json"
+      - "schemas/pilot-visual-observation.schema.json"
+      - "tests/unit/test_pilot_selection.py"
+      - "sources/primary/manifests/pages.jsonl"
+      - "sources/primary/manifests/foldout-panel-relations.csv"
+      - "corpus/pilots/PILOT-0001/candidates.jsonl"
+      - "corpus/pilots/PILOT-0001/candidates.csv"
+      - "corpus/pilots/PILOT-0001/candidate-freeze.json"
+      - ".github/workflows/validate-pilot-candidates.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/protocols/pilot-selection.md"
+      - "src/voynich/pilot/**"
+      - "scripts/build_pilot_candidate_pool.py"
+      - "schemas/pilot-candidate.schema.json"
+      - "tests/unit/test_pilot_selection.py"
+      - "sources/primary/manifests/pages.jsonl"
+      - "sources/primary/manifests/foldout-panel-relations.csv"
+      - "corpus/pilots/PILOT-0001/candidates.jsonl"
+      - "corpus/pilots/PILOT-0001/candidates.csv"
+      - "corpus/pilots/PILOT-0001/candidate-freeze.json"
+      - ".github/workflows/validate-pilot-candidates.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install validation dependencies
+        run: python -m pip install pytest jsonschema
+
+      - name: Run unit tests
+        run: pytest -q tests/unit/test_pilot_selection.py
+
+      - name: Regenerate candidate pool in temporary paths
+        run: |
+          mkdir -p /tmp/pilot-0001
+          python scripts/build_pilot_candidate_pool.py \
+            --pages sources/primary/manifests/pages.jsonl \
+            --foldout-relations sources/primary/manifests/foldout-panel-relations.csv \
+            --jsonl-output /tmp/pilot-0001/candidates.jsonl \
+            --csv-output /tmp/pilot-0001/candidates.csv \
+            --freeze-output /tmp/pilot-0001/candidate-freeze.json
+
+      - name: Confirm deterministic regeneration
+        run: |
+          python - <<'PY'
+          import csv
+          import json
+          from pathlib import Path
+
+          def jsonl(path):
+              return [
+                  json.loads(line)
+                  for line in Path(path).read_text(encoding="utf-8").splitlines()
+                  if line.strip()
+              ]
+
+          def csv_rows(path):
+              with Path(path).open(encoding="utf-8", newline="") as handle:
+                  return list(csv.DictReader(handle))
+
+          comparisons = [
+              (
+                  jsonl("corpus/pilots/PILOT-0001/candidates.jsonl"),
+                  jsonl("/tmp/pilot-0001/candidates.jsonl"),
+                  "candidates.jsonl",
+              ),
+              (
+                  csv_rows("corpus/pilots/PILOT-0001/candidates.csv"),
+                  csv_rows("/tmp/pilot-0001/candidates.csv"),
+                  "candidates.csv",
+              ),
+              (
+                  json.loads(Path("corpus/pilots/PILOT-0001/candidate-freeze.json").read_text()),
+                  json.loads(Path("/tmp/pilot-0001/candidate-freeze.json").read_text()),
+                  "candidate-freeze.json",
+              ),
+          ]
+          for committed, regenerated, name in comparisons:
+              if committed != regenerated:
+                  raise SystemExit(f"committed {name} differs from deterministic regeneration")
+          PY
+
+      - name: Validate schema and frozen invariants
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator, FormatChecker
+
+          schema = json.loads(Path("schemas/pilot-candidate.schema.json").read_text())
+          records = [
+              json.loads(line)
+              for line in Path("corpus/pilots/PILOT-0001/candidates.jsonl").read_text().splitlines()
+              if line.strip()
+          ]
+          freeze = json.loads(Path("corpus/pilots/PILOT-0001/candidate-freeze.json").read_text())
+          validator = Draft202012Validator(schema, format_checker=FormatChecker())
+          errors = [error for record in records for error in validator.iter_errors(record)]
+          if errors:
+              raise SystemExit("; ".join(error.message for error in errors[:10]))
+
+          payload = ("\n".join(
+              json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+              for record in records
+          ) + "\n").encode("utf-8")
+          digest = hashlib.sha256(payload).hexdigest()
+
+          assert len(records) == 25
+          assert freeze["freeze_id"] == "PILOT-CANDIDATES-FREEZE-0001"
+          assert freeze["status"] == "frozen"
+          assert freeze["candidate_count"] == 25
+          assert freeze["candidate_set_sha256"] == digest
+          assert digest == "d460d6cc7c200f87e2b3182c1783079a6181bad01d0a83a8bd899b0cc7b8c113"
+          assert freeze["visual_outcomes_used"] is False
+          assert freeze["external_transliterations_used"] is False
+          assert sum(row["composition_status"] == "composite_candidate" for row in records) == 10
+          assert sum(
+              row["composition_status"] == "single_side_or_unspecified"
+              and not row["foldout_complex_ids"]
+              for row in records
+          ) == 14
+          assert sum(bool(row["physical_leaf_ids"]) for row in records) == 4
+          assert len({value for row in records for value in row["foldout_complex_ids"]}) == 7
+          assert len({row["source_sequence_bin"] for row in records}) == 8
+          assert all(row["visual_review_status"] == "pending" for row in records)
+          assert not any(row["external_transliteration_consulted"] for row in records)
+          assert len({row["photographic_panel_id"] for row in records}) == 25
+          assert len({row["candidate_id"] for row in records}) == 25
+          PY
