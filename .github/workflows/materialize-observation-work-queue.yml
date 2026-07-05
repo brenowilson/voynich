@@ -1,6 +1,15 @@
 name: Materialize observation work queue
 
 on:
+  push:
+    branches:
+      - feature/observation-work-queue
+    paths:
+      - ".github/workflows/materialize-observation-work-queue.yml"
+      - "src/voynich/observation/work_queue.py"
+      - "scripts/build_observation_work_queue.py"
+      - "tests/unit/test_observation_work_queue.py"
+      - "schemas/observation-work-queue.schema.json"
   pull_request:
     paths:
       - ".github/workflows/materialize-observation-work-queue.yml"
@@ -19,6 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: feature/observation-work-queue
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
