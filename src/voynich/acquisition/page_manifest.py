@@ -145,7 +145,7 @@ def build_records(
 
         records.append(
             {
-                "schema_version": "0.2.0",
+                "schema_version": "0.2.1",
                 "sequence_index": int(asset["sequence_index"]),
                 "record_type": record_type,
                 "institutional_id": child_oid,
@@ -159,17 +159,21 @@ def build_records(
                 "candidate_type": candidate_type,
                 "reading_order": None,
                 "source_url": str(byte_record.get("source_url") or asset.get("image_url") or ""),
+                "source_filename": None,
+                "source_filename_status": "not_supplied_by_iiif_manifest",
                 "source_sha256": digest,
                 "byte_count": int(byte_record["byte_count"]),
                 "width_px": int(asset["width_px"]),
                 "height_px": int(asset["height_px"]),
                 "stored_path": str(byte_record["stored_path"]),
+                "acquisition_status": "verified",
                 "rights_record": rights_record_path,
                 "rights_status": rights_status,
                 "retrieved_at": byte_record.get("acquired_at"),
                 "notes": (
                     "Institutional label retained verbatim; physical parents are explicit label tokens; "
-                    "reading order is not asserted."
+                    "the IIIF manifest supplies identifiers and URLs but no original filename; reading "
+                    "order is not asserted."
                 ),
             }
         )
@@ -203,7 +207,10 @@ def write_csv_summary(path: Path, records: list[dict[str, Any]]) -> None:
         "byte_count",
         "source_sha256",
         "source_url",
+        "source_filename",
+        "source_filename_status",
         "stored_path",
+        "acquisition_status",
         "composition_status",
         "candidate_type",
         "reading_order",
