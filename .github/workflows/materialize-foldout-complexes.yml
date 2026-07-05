@@ -1,0 +1,43 @@
+name: Materialize foldout complexes
+
+on:
+  push:
+    paths:
+      - ".github/workflows/materialize-foldout-complexes.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/foldout-complexes
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build foldout complex outputs
+        run: |
+          python scripts/build_foldout_complexes.py \
+            --pages sources/primary/manifests/pages.jsonl \
+            --codicology sources/primary/yale/foldout-codicology.json \
+            --complexes-output sources/primary/manifests/foldout-complexes.jsonl \
+            --relations-output sources/primary/manifests/foldout-panel-relations.csv
+      - name: Commit deterministic outputs
+        run: |
+          git config user.name "voynich-source-bot"
+          git config user.email "voynich-source-bot@users.noreply.github.com"
+          git add sources/primary/manifests/foldout-complexes.jsonl \
+                  sources/primary/manifests/foldout-panel-relations.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "data: materialize foldout complexes"
+            git push origin HEAD:feature/foldout-complexes
+          fi
