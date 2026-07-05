@@ -1,0 +1,101 @@
+name: Materialize PILOT-0001 candidates
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/materialize-pilot-candidates.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/pilot-selection
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install validation dependencies
+        run: python -m pip install pytest jsonschema
+
+      - name: Run pilot-selection tests
+        run: pytest -q tests/unit/test_pilot_selection.py
+
+      - name: Build candidate pool
+        run: |
+          python scripts/build_pilot_candidate_pool.py \
+            --pages sources/primary/manifests/pages.jsonl \
+            --foldout-relations sources/primary/manifests/foldout-panel-relations.csv \
+            --jsonl-output corpus/pilots/PILOT-0001/candidates.jsonl \
+            --csv-output corpus/pilots/PILOT-0001/candidates.csv \
+            --freeze-output corpus/pilots/PILOT-0001/candidate-freeze.json
+
+      - name: Validate candidates and freeze
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator, FormatChecker
+
+          schema = json.loads(Path("schemas/pilot-candidate.schema.json").read_text())
+          records = [
+              json.loads(line)
+              for line in Path("corpus/pilots/PILOT-0001/candidates.jsonl").read_text().splitlines()
+              if line.strip()
+          ]
+          freeze = json.loads(Path("corpus/pilots/PILOT-0001/candidate-freeze.json").read_text())
+          validator = Draft202012Validator(schema, format_checker=FormatChecker())
+          errors = [error for record in records for error in validator.iter_errors(record)]
+          if errors:
+              raise SystemExit("; ".join(error.message for error in errors[:10]))
+          payload = ("\n".join(
+              json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+              for record in records
+          ) + "\n").encode("utf-8")
+          digest = hashlib.sha256(payload).hexdigest()
+          if not 24 <= len(records) <= 40:
+              raise SystemExit(f"unexpected candidate count: {len(records)}")
+          if freeze["candidate_count"] != len(records):
+              raise SystemExit("freeze candidate count mismatch")
+          if freeze["candidate_set_sha256"] != digest:
+              raise SystemExit("freeze candidate digest mismatch")
+          if freeze["visual_outcomes_used"] or freeze["external_transliterations_used"]:
+              raise SystemExit("metadata-only freeze contains forbidden inputs")
+          if sum(bool(row["physical_leaf_ids"]) for row in records) != 4:
+              raise SystemExit("expected four explicit 85-86 foldout panels")
+          if len({value for row in records for value in row["foldout_complex_ids"]}) != 7:
+              raise SystemExit("candidate pool does not cover all seven foldout complexes")
+          if len({row["source_sequence_bin"] for row in records}) != 8:
+              raise SystemExit("candidate pool does not cover all eight sequence bins")
+          if sum(
+              row["composition_status"] == "single_side_or_unspecified"
+              and not row["foldout_complex_ids"]
+              for row in records
+          ) != 16:
+              raise SystemExit("expected sixteen ordinary metadata representatives")
+          PY
+
+      - name: Commit deterministic candidate freeze
+        run: |
+          git config user.name "voynich-source-bot"
+          git config user.email "voynich-source-bot@users.noreply.github.com"
+          git add corpus/pilots/PILOT-0001/candidates.jsonl \
+                  corpus/pilots/PILOT-0001/candidates.csv \
+                  corpus/pilots/PILOT-0001/candidate-freeze.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data: freeze PILOT-0001 candidate pool"
+            git pull --rebase origin feature/pilot-selection
+            git push origin HEAD:feature/pilot-selection
+          fi
