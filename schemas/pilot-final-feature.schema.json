@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/pilot-final-feature.schema.json",
+  "title": "PILOT-0001 Final Adjudicated Visual Feature Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "pilot_id",
+    "candidate_id",
+    "photographic_panel_id",
+    "source_sha256",
+    "text_coverage",
+    "graphic_coverage",
+    "dominant_graphic_geometry",
+    "line_organization",
+    "visual_density",
+    "color_presence",
+    "source_quality",
+    "crop_or_occlusion",
+    "primary_observer_id",
+    "independent_observer_id",
+    "primary_confidence",
+    "independent_confidence",
+    "final_confidence",
+    "adjudication_required",
+    "dispute_ids",
+    "adjudicator_ids",
+    "field_resolution",
+    "external_transliterations_used",
+    "semantic_sections_used"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "pilot_id": {"const": "PILOT-0001"},
+    "candidate_id": {"type": "string", "pattern": "^PILOT-0001-CAND-[0-9]{3}$"},
+    "photographic_panel_id": {"type": "string", "pattern": "^YDC-PANEL-[0-9]+$"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "text_coverage": {"enum": ["none", "low", "medium", "high", "dominant", "uncertain"]},
+    "graphic_coverage": {"enum": ["none", "low", "medium", "high", "dominant", "uncertain"]},
+    "dominant_graphic_geometry": {
+      "enum": [
+        "none",
+        "organic_branched",
+        "circular_radial",
+        "container_network",
+        "human_figure_cluster",
+        "mixed",
+        "other_observable",
+        "uncertain"
+      ]
+    },
+    "line_organization": {"enum": ["none", "clear", "ambiguous", "mixed", "uncertain"]},
+    "visual_density": {"enum": ["sparse", "moderate", "dense", "very_dense", "uncertain"]},
+    "color_presence": {"enum": ["none", "limited", "substantial", "uncertain"]},
+    "source_quality": {"enum": ["good", "limited", "problematic", "uncertain"]},
+    "crop_or_occlusion": {"enum": ["none", "present", "uncertain"]},
+    "primary_observer_id": {"type": "string", "pattern": "^OBS-[A-Z0-9-]+$"},
+    "independent_observer_id": {"type": "string", "pattern": "^OBS-[A-Z0-9-]+$"},
+    "primary_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "independent_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "final_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "adjudication_required": {"type": "boolean"},
+    "dispute_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^PILOT-0001-DIS-[0-9]{3}$"}
+    },
+    "adjudicator_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^OBS-[A-Z0-9-]+$"}
+    },
+    "field_resolution": {
+      "type": "object",
+      "required": [
+        "text_coverage",
+        "graphic_coverage",
+        "dominant_graphic_geometry",
+        "line_organization",
+        "visual_density",
+        "color_presence",
+        "source_quality",
+        "crop_or_occlusion"
+      ],
+      "properties": {
+        "text_coverage": {"enum": ["observer_agreement", "resolved", "retain_uncertainty"]},
+        "graphic_coverage": {"enum": ["observer_agreement", "resolved", "retain_uncertainty"]},
+        "dominant_graphic_geometry": {"enum": ["observer_agreement", "resolved", "retain_uncertainty"]},
+        "line_organization": {"enum": ["observer_agreement", "resolved", "retain_uncertainty"]},
+        "visual_density": {"enum": ["observer_agreement", "resolved", "retain_uncertainty"]},
+        "color_presence": {"enum": ["observer_agreement", "resolved", "retain_uncertainty"]},
+        "source_quality": {"enum": ["observer_agreement", "resolved", "retain_uncertainty"]},
+        "crop_or_occlusion": {"enum": ["observer_agreement", "resolved", "retain_uncertainty"]}
+      },
+      "additionalProperties": false
+    },
+    "external_transliterations_used": {"const": false},
+    "semantic_sections_used": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"adjudication_required": {"const": false}}},
+      "then": {
+        "properties": {
+          "dispute_ids": {"maxItems": 0},
+          "adjudicator_ids": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"adjudication_required": {"const": true}}},
+      "then": {
+        "properties": {
+          "dispute_ids": {"minItems": 1},
+          "adjudicator_ids": {"minItems": 1}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
