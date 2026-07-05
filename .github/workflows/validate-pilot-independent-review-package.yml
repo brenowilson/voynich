@@ -1,0 +1,96 @@
+name: Validate PILOT-0001 independent review package
+
+on:
+  pull_request:
+    paths:
+      - "docs/protocols/pilot-independent-review.md"
+      - "src/voynich/pilot/independent_review.py"
+      - "scripts/build_pilot_independent_review_template.py"
+      - "scripts/import_pilot_independent_review.py"
+      - "tests/unit/test_pilot_independent_review.py"
+      - "corpus/pilots/PILOT-0001/candidates.jsonl"
+      - "corpus/pilots/PILOT-0001/independent-review-template.csv"
+      - ".github/workflows/validate-pilot-independent-review-package.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/protocols/pilot-independent-review.md"
+      - "src/voynich/pilot/independent_review.py"
+      - "scripts/build_pilot_independent_review_template.py"
+      - "scripts/import_pilot_independent_review.py"
+      - "tests/unit/test_pilot_independent_review.py"
+      - "corpus/pilots/PILOT-0001/candidates.jsonl"
+      - "corpus/pilots/PILOT-0001/independent-review-template.csv"
+      - ".github/workflows/validate-pilot-independent-review-package.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install test dependency
+        run: python -m pip install pytest
+
+      - name: Run unit tests
+        run: pytest -q tests/unit/test_pilot_independent_review.py
+
+      - name: Regenerate blinded review template
+        run: |
+          python scripts/build_pilot_independent_review_template.py \
+            --candidates corpus/pilots/PILOT-0001/candidates.jsonl \
+            --output /tmp/independent-review-template.csv
+
+      - name: Confirm template is deterministic and blind
+        run: |
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+
+          def rows(path):
+              with Path(path).open(encoding="utf-8", newline="") as handle:
+                  return list(csv.DictReader(handle))
+
+          committed = rows("corpus/pilots/PILOT-0001/independent-review-template.csv")
+          regenerated = rows("/tmp/independent-review-template.csv")
+          if committed != regenerated:
+              raise SystemExit("committed independent-review template is not deterministic")
+          if len(committed) != 25:
+              raise SystemExit(f"expected 25 review rows, found {len(committed)}")
+
+          immutable = {
+              "candidate_id",
+              "photographic_panel_id",
+              "source_url",
+              "source_sha256",
+          }
+          allowed_prefill = immutable | {
+              "external_transliteration_consulted",
+              "semantic_section_assignment",
+          }
+          for row in committed:
+              if row["external_transliteration_consulted"] != "false":
+                  raise SystemExit("template permits external-transliteration contamination")
+              if row["semantic_section_assignment"]:
+                  raise SystemExit("template contains a semantic assignment")
+              for key, value in row.items():
+                  if key not in allowed_prefill and value:
+                      raise SystemExit(f"template leaks review value {key} for {row['candidate_id']}")
+          if len({row["candidate_id"] for row in committed}) != 25:
+              raise SystemExit("candidate IDs are not unique")
+          if len({row["source_sha256"] for row in committed}) != 25:
+              raise SystemExit("source hashes are not unique")
+          PY
