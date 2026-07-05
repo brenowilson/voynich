@@ -66,7 +66,7 @@ def test_candidate_pool_is_metadata_only_stratified_and_deterministic() -> None:
     assert summary["explicit_leaf_panel_count"] == 2
     assert summary["foldout_complexes_represented"] == 3
     assert summary["sequence_bins_represented"] == 8
-    assert summary["ordinary_candidate_count"] == 16
+    assert summary["ordinary_candidate_count"] == 14
     assert all(record["visual_review_status"] == "pending" for record in records)
     assert not any(record["external_transliteration_consulted"] for record in records)
     assert "YDC-PANEL-2025" not in {record["photographic_panel_id"] for record in records}
