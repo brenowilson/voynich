@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/observation-work-queue.schema.json",
+  "title": "PILOT-0001 Observation Work Queue",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "queue_id",
+    "protocol_id",
+    "status",
+    "candidate_freeze_id",
+    "candidate_set_sha256",
+    "package_count",
+    "batch_count",
+    "batching_rule",
+    "package_set_sha256",
+    "interpretive_outputs_used",
+    "external_transliterations_used",
+    "final_pilot_selection_used",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "queue_id": {"const": "OBS-WORK-QUEUE-PILOT-0001-0001"},
+    "protocol_id": {"const": "OBSERVATION-PROTOCOL-0001"},
+    "status": {"const": "ready"},
+    "candidate_freeze_id": {"const": "PILOT-CANDIDATES-FREEZE-0001"},
+    "candidate_set_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "package_count": {"const": 25},
+    "batch_count": {"const": 5},
+    "batching_rule": {"const": "source-sequence-round-robin"},
+    "package_set_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "interpretive_outputs_used": {"const": false},
+    "external_transliterations_used": {"const": false},
+    "final_pilot_selection_used": {"const": false},
+    "entries": {
+      "type": "array",
+      "minItems": 25,
+      "maxItems": 25,
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "photographic_panel_id",
+          "sequence_index",
+          "source_sha256",
+          "package_id",
+          "package_path",
+          "package_sha256",
+          "batch_id",
+          "annotation_status"
+        ],
+        "properties": {
+          "candidate_id": {"type": "string", "pattern": "^PILOT-0001-CAND-[0-9]{3}$"},
+          "photographic_panel_id": {"type": "string", "pattern": "^YDC-PANEL-[0-9]+$"},
+          "sequence_index": {"type": "integer", "minimum": 1},
+          "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "package_id": {
+            "type": "string",
+            "pattern": "^OBS-PKG-YDC-PANEL-[0-9]+-R000$"
+          },
+          "package_path": {
+            "type": "string",
+            "pattern": "^corpus/pilots/PILOT-0001/observation-work-queue/packages/PILOT-0001-CAND-[0-9]{3}\\.json$"
+          },
+          "package_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "batch_id": {"type": "string", "pattern": "^OBS-BATCH-PILOT-0001-0[1-5]$"},
+          "annotation_status": {"const": "blank"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
