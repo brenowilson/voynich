@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "source_title": "Beinecke MS 408 — physical description and collation",
+  "source_url": "https://pre1600ms.beinecke.library.yale.edu/docs/pre1600.ms408.htm",
+  "accessed_at": "2026-07-04",
+  "institution": "Yale University Library / Beinecke Rare Book and Manuscript Library",
+  "shelfmark": "Beinecke MS 408",
+  "evidence_scope": "Institutional physical description and quire-level collation only.",
+  "summary_payload_sha256": "2ff2ca215f94e3e8e5545f8fe00412f63b7f8f78596f5123e21e308ab2a03165",
+  "folding_leaf_totals": {
+    "double": 5,
+    "triple": 3,
+    "quadruple": 1,
+    "sextuple": 1
+  },
+  "complexes": [
+    {
+      "complex_id": "MS408-Q09-FOLDOUT-COMPLEX",
+      "quire_id": "IX",
+      "folio_min": 67,
+      "folio_max": 68,
+      "folding_leaf_profile": {"double": 1, "triple": 1, "quadruple": 0, "sextuple": 0},
+      "assignment_status": "quire_profile_only",
+      "geometry_status": "individual_leaf_assignment_unresolved",
+      "reading_order": null,
+      "evidence_note": "The institutional collation assigns one double and one triple folding leaf to quire IX; the exact mapping of digital panels to those two physical leaves is not asserted here."
+    },
+    {
+      "complex_id": "MS408-Q10-FOLDOUT-COMPLEX",
+      "quire_id": "X",
+      "folio_min": 69,
+      "folio_max": 70,
+      "folding_leaf_profile": {"double": 0, "triple": 1, "quadruple": 0, "sextuple": 0},
+      "assignment_status": "quire_profile_supported",
+      "geometry_status": "panel_geometry_unresolved",
+      "reading_order": null,
+      "evidence_note": "The institutional collation assigns one triple folding leaf to quire X."
+    },
+    {
+      "complex_id": "MS408-Q11-FOLDOUT-COMPLEX",
+      "quire_id": "XI",
+      "folio_min": 71,
+      "folio_max": 72,
+      "folding_leaf_profile": {"double": 0, "triple": 0, "quadruple": 1, "sextuple": 0},
+      "assignment_status": "quire_profile_supported",
+      "geometry_status": "panel_geometry_unresolved",
+      "reading_order": null,
+      "evidence_note": "The institutional collation assigns one quadruple folding leaf to quire XI."
+    },
+    {
+      "complex_id": "MS408-Q14-FOLDOUT-COMPLEX",
+      "quire_id": "XIV",
+      "folio_min": 85,
+      "folio_max": 86,
+      "folding_leaf_profile": {"double": 0, "triple": 0, "quadruple": 0, "sextuple": 1},
+      "assignment_status": "institutionally_explicit",
+      "geometry_status": "single_sextuple_leaf_confirmed_panel_order_unresolved",
+      "reading_order": null,
+      "evidence_note": "The institutional catalog identifies folios 85r–86v as a sextuple-folio folding leaf; the digital labels also name the 85–86 foldout."
+    },
+    {
+      "complex_id": "MS408-Q15-FOLDOUT-COMPLEX",
+      "quire_id": "XV",
+      "folio_min": 87,
+      "folio_max": 90,
+      "folding_leaf_profile": {"double": 1, "triple": 1, "quadruple": 0, "sextuple": 0},
+      "assignment_status": "quire_profile_only",
+      "geometry_status": "individual_leaf_assignment_unresolved",
+      "reading_order": null,
+      "evidence_note": "The institutional collation assigns one triple and one double folding leaf to quire XV; overlapping digital side labels do not uniquely assign every photograph to one of those two leaves."
+    },
+    {
+      "complex_id": "MS408-Q16-FOLDOUT-COMPLEX",
+      "quire_id": "XVI",
+      "folio_min": 93,
+      "folio_max": 96,
+      "folding_leaf_profile": {"double": 1, "triple": 0, "quadruple": 0, "sextuple": 0},
+      "assignment_status": "quire_profile_supported",
+      "geometry_status": "panel_geometry_unresolved",
+      "reading_order": null,
+      "evidence_note": "The institutional collation assigns one double folding leaf to quire XVI."
+    },
+    {
+      "complex_id": "MS408-Q17-FOLDOUT-COMPLEX",
+      "quire_id": "XVII",
+      "folio_min": 99,
+      "folio_max": 102,
+      "folding_leaf_profile": {"double": 2, "triple": 0, "quadruple": 0, "sextuple": 0},
+      "assignment_status": "quire_profile_only",
+      "geometry_status": "individual_leaf_assignment_unresolved",
+      "reading_order": null,
+      "evidence_note": "The institutional collation assigns two double folding leaves to quire XVII; the exact split of digital panels between the two leaves is not asserted."
+    }
+  ],
+  "interpretation_boundary": {
+    "asset_sequence_is_reading_order": false,
+    "label_token_is_complete_geometry": false,
+    "pixel_width_is_physical_leaf_extent": false,
+    "unresolved_assignments_are_preserved": true
+  }
+}

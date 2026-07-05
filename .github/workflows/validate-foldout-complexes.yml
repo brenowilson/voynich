@@ -1,0 +1,188 @@
+name: Validate page and foldout manifests
+
+on:
+  pull_request:
+    paths:
+      - "src/voynich/acquisition/page_manifest.py"
+      - "src/voynich/acquisition/foldout_complexes.py"
+      - "scripts/build_canonical_page_manifest.py"
+      - "scripts/build_foldout_complexes.py"
+      - "schemas/page-manifest.schema.json"
+      - "schemas/foldout-complex.schema.json"
+      - "tests/unit/test_canonical_page_manifest.py"
+      - "tests/unit/test_foldout_complexes.py"
+      - "sources/primary/yale/assets.jsonl"
+      - "sources/primary/yale/image-byte-records-stored.jsonl"
+      - "sources/primary/yale/rights.json"
+      - "sources/primary/yale/foldout-codicology.json"
+      - "sources/primary/manifests/asset-side-relations.csv"
+      - "sources/primary/manifests/foldouts.csv"
+      - "sources/primary/manifests/pages.jsonl"
+      - "sources/primary/manifests/pages.csv"
+      - "sources/primary/manifests/foldout-complexes.jsonl"
+      - "sources/primary/manifests/foldout-panel-relations.csv"
+      - "docs/protocols/foldout-modeling.md"
+      - "reports/source-audit.md"
+      - ".github/workflows/validate-foldout-complexes.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/voynich/acquisition/page_manifest.py"
+      - "src/voynich/acquisition/foldout_complexes.py"
+      - "scripts/build_canonical_page_manifest.py"
+      - "scripts/build_foldout_complexes.py"
+      - "schemas/page-manifest.schema.json"
+      - "schemas/foldout-complex.schema.json"
+      - "tests/unit/test_canonical_page_manifest.py"
+      - "tests/unit/test_foldout_complexes.py"
+      - "sources/primary/yale/foldout-codicology.json"
+      - "sources/primary/manifests/pages.jsonl"
+      - "sources/primary/manifests/pages.csv"
+      - "sources/primary/manifests/foldout-complexes.jsonl"
+      - "sources/primary/manifests/foldout-panel-relations.csv"
+      - ".github/workflows/validate-foldout-complexes.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install validation dependencies
+        run: python -m pip install pytest jsonschema
+
+      - name: Run unit tests
+        run: >-
+          pytest -q
+          tests/unit/test_canonical_page_manifest.py
+          tests/unit/test_foldout_complexes.py
+
+      - name: Regenerate manifests in temporary paths
+        run: |
+          mkdir -p /tmp/voynich-validation
+          python scripts/build_canonical_page_manifest.py \
+            --assets sources/primary/yale/assets.jsonl \
+            --byte-records sources/primary/yale/image-byte-records-stored.jsonl \
+            --relations sources/primary/manifests/asset-side-relations.csv \
+            --composites sources/primary/manifests/foldouts.csv \
+            --rights sources/primary/yale/rights.json \
+            --jsonl-output /tmp/voynich-validation/pages.jsonl \
+            --csv-output /tmp/voynich-validation/pages.csv
+          python scripts/build_foldout_complexes.py \
+            --pages /tmp/voynich-validation/pages.jsonl \
+            --codicology sources/primary/yale/foldout-codicology.json \
+            --complexes-output /tmp/voynich-validation/foldout-complexes.jsonl \
+            --relations-output /tmp/voynich-validation/foldout-panel-relations.csv
+
+      - name: Confirm committed outputs are deterministic
+        run: |
+          python - <<'PY'
+          import csv
+          import json
+          from pathlib import Path
+
+          def read_jsonl(path: str):
+              return [
+                  json.loads(line)
+                  for line in Path(path).read_text(encoding="utf-8").splitlines()
+                  if line.strip()
+              ]
+
+          def read_csv(path: str):
+              with Path(path).open(encoding="utf-8", newline="") as handle:
+                  return list(csv.DictReader(handle))
+
+          comparisons = [
+              (
+                  read_jsonl("sources/primary/manifests/pages.jsonl"),
+                  read_jsonl("/tmp/voynich-validation/pages.jsonl"),
+                  "pages.jsonl",
+              ),
+              (
+                  read_csv("sources/primary/manifests/pages.csv"),
+                  read_csv("/tmp/voynich-validation/pages.csv"),
+                  "pages.csv",
+              ),
+              (
+                  read_jsonl("sources/primary/manifests/foldout-complexes.jsonl"),
+                  read_jsonl("/tmp/voynich-validation/foldout-complexes.jsonl"),
+                  "foldout-complexes.jsonl",
+              ),
+              (
+                  read_csv("sources/primary/manifests/foldout-panel-relations.csv"),
+                  read_csv("/tmp/voynich-validation/foldout-panel-relations.csv"),
+                  "foldout-panel-relations.csv",
+              ),
+          ]
+          for committed, regenerated, name in comparisons:
+              if committed != regenerated:
+                  raise SystemExit(f"committed {name} differs from deterministic regeneration")
+          PY
+
+      - name: Validate schemas and invariants
+        run: |
+          python - <<'PY'
+          import csv
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator, FormatChecker
+
+          checker = FormatChecker()
+          page_schema = json.loads(Path("schemas/page-manifest.schema.json").read_text())
+          foldout_schema = json.loads(Path("schemas/foldout-complex.schema.json").read_text())
+          pages = [
+              json.loads(line)
+              for line in Path("sources/primary/manifests/pages.jsonl").read_text().splitlines()
+              if line.strip()
+          ]
+          complexes = [
+              json.loads(line)
+              for line in Path("sources/primary/manifests/foldout-complexes.jsonl").read_text().splitlines()
+              if line.strip()
+          ]
+          with Path("sources/primary/manifests/foldout-panel-relations.csv").open(
+              encoding="utf-8", newline=""
+          ) as handle:
+              relations = list(csv.DictReader(handle))
+
+          page_validator = Draft202012Validator(page_schema, format_checker=checker)
+          foldout_validator = Draft202012Validator(foldout_schema, format_checker=checker)
+          errors = [error for record in pages for error in page_validator.iter_errors(record)]
+          errors += [error for record in complexes for error in foldout_validator.iter_errors(record)]
+          if errors:
+              raise SystemExit("; ".join(error.message for error in errors[:10]))
+
+          assert len(pages) == 213
+          assert sum(row["record_type"] == "support_view" for row in pages) == 9
+          assert sum(row["composition_status"] == "composite_candidate" for row in pages) == 21
+          assert all(row["source_filename"] is None for row in pages)
+          assert all(row["source_filename_status"] == "not_supplied_by_iiif_manifest" for row in pages)
+          assert all(row["acquisition_status"] == "verified" for row in pages)
+          assert all(row["reading_order"] is None for row in pages)
+
+          assert len(complexes) == 7
+          assert len(relations) == 40
+          assert sum(row["folding_leaf_count"] for row in complexes) == 10
+          totals = {extent: 0 for extent in ("double", "triple", "quadruple", "sextuple")}
+          for record in complexes:
+              for extent, count in record["folding_leaf_profile"].items():
+                  totals[extent] += count
+          assert totals == {"double": 5, "triple": 3, "quadruple": 1, "sextuple": 1}
+          assert sum(row["label_candidate_panel_count"] for row in complexes) == 21
+          assert sum(bool(row["physical_leaf_id"]) for row in relations) == 4
+          assert not any(row["reading_order"] for row in relations)
+          assert len({row["photographic_panel_id"] for row in relations}) == len(relations)
+          PY

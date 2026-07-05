@@ -116,3 +116,30 @@ Preserve the absence of an item-specific IIIF rights value and record Yale's ins
 
 ### Status
 Accepted.
+
+## 2026-07-05 — Canonical page and foldout model completed
+
+### Result
+The institutional image inventory was converted into deterministic page, side, panel and foldout-complex layers while preserving unresolved physical geometry explicitly.
+
+### Evidence
+- Canonical page records: `213`.
+- Support views separated from manuscript images: `9`.
+- Label-derived composite or fragmented candidates: `21`.
+- Quire-level foldout complexes: `7`.
+- Physical folding-leaf slots: `10`.
+- Panel-to-complex relations: `40`.
+- Panels assigned to the institutionally explicit 85–86 sextuple leaf: `4`.
+- Reading-order values asserted: `0`.
+- Page-manifest schema version: `0.2.1`.
+- Foldout-complex schema version: `0.1.0`.
+
+### Consequences
+- A photographic asset is no longer treated as equivalent to one physical folio side.
+- The five double, three triple, one quadruple and one sextuple folding leaves reported by Yale are represented as explicit physical-leaf slots.
+- Ambiguous panel-to-leaf assignments remain unresolved rather than guessed.
+- The institutional IIIF manifest's absence of original filenames is recorded explicitly as `null`, with stable Yale identifiers and URLs retained instead.
+- The source layer contains no inferred reading order, semantic section or transliteration-derived structure.
+
+### Status
+Completed and ready for pilot-set selection.

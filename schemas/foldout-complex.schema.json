@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/foldout-complex.schema.json",
+  "title": "Voynich Foldout Complex Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "complex_id",
+    "quire_id",
+    "folio_range",
+    "folding_leaf_profile",
+    "folding_leaf_count",
+    "physical_leaf_slots",
+    "panel_ids",
+    "institutional_ids",
+    "side_ids",
+    "panel_count",
+    "label_candidate_panel_count",
+    "assignment_status",
+    "geometry_status",
+    "reading_order",
+    "evidence_source",
+    "evidence_scope",
+    "evidence_note"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "complex_id": {"type": "string", "pattern": "^MS408-Q[0-9]{2}-FOLDOUT-COMPLEX$"},
+    "quire_id": {"enum": ["IX", "X", "XI", "XIV", "XV", "XVI", "XVII"]},
+    "folio_range": {
+      "type": "object",
+      "required": ["minimum", "maximum"],
+      "properties": {
+        "minimum": {"type": "integer", "minimum": 1},
+        "maximum": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "folding_leaf_profile": {
+      "type": "object",
+      "required": ["double", "triple", "quadruple", "sextuple"],
+      "properties": {
+        "double": {"type": "integer", "minimum": 0},
+        "triple": {"type": "integer", "minimum": 0},
+        "quadruple": {"type": "integer", "minimum": 0},
+        "sextuple": {"type": "integer", "minimum": 0}
+      },
+      "minProperties": 4,
+      "maxProperties": 4,
+      "additionalProperties": false
+    },
+    "folding_leaf_count": {"type": "integer", "minimum": 1},
+    "physical_leaf_slots": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["physical_leaf_id", "extent", "panel_assignment_status"],
+        "properties": {
+          "physical_leaf_id": {
+            "type": "string",
+            "pattern": "^MS408-Q[0-9]{2}-FOLDOUT-LEAF-(DOUBLE|TRIPLE|QUADRUPLE|SEXTUPLE)-[0-9]{2}$"
+          },
+          "extent": {"enum": ["double", "triple", "quadruple", "sextuple"]},
+          "panel_assignment_status": {"enum": ["unresolved", "all_complex_panels_assigned"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "panel_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^YDC-PANEL-[0-9]+$"}
+    },
+    "institutional_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[0-9]+$"}
+    },
+    "side_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[0-9]+[rv]$"}
+    },
+    "panel_count": {"type": "integer", "minimum": 1},
+    "label_candidate_panel_count": {"type": "integer", "minimum": 0},
+    "assignment_status": {
+      "enum": ["quire_profile_only", "quire_profile_supported", "institutionally_explicit"]
+    },
+    "geometry_status": {
+      "enum": [
+        "individual_leaf_assignment_unresolved",
+        "panel_geometry_unresolved",
+        "single_sextuple_leaf_confirmed_panel_order_unresolved"
+      ]
+    },
+    "reading_order": {"type": "null"},
+    "evidence_source": {"type": "string", "format": "uri"},
+    "evidence_scope": {"type": "string", "minLength": 1},
+    "evidence_note": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}
