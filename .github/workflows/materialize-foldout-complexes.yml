@@ -110,5 +110,6 @@ jobs:
                   sources/primary/manifests/foldout-panel-relations.csv
           if ! git diff --cached --quiet; then
             git commit -m "data: regenerate canonical page and foldout manifests"
+            git pull --rebase origin feature/foldout-complexes
             git push origin HEAD:feature/foldout-complexes
           fi
