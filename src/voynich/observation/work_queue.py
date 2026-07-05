@@ -58,18 +58,18 @@ def build_work_queue(
     if batch_count <= 0:
         raise ObservationWorkQueueError("batch_count must be positive")
 
-    candidate_digest = canonical_records_sha256(candidates)
+    ordered = sorted(
+        candidates,
+        key=lambda row: (int(row["sequence_index"]), str(row["candidate_id"])),
+    )
+    candidate_digest = canonical_records_sha256(ordered)
     if candidate_digest != candidate_freeze.get("candidate_set_sha256"):
         raise ObservationWorkQueueError("candidate records do not match candidate freeze")
     if candidate_freeze.get("status") != "frozen":
         raise ObservationWorkQueueError("candidate set is not frozen")
 
-    candidates_by_id = unique_index(candidates, "candidate_id", "candidate set")
+    candidates_by_id = unique_index(ordered, "candidate_id", "candidate set")
     pages_by_panel = unique_index(pages, "photographic_panel_id", "page manifest")
-    ordered = sorted(
-        candidates,
-        key=lambda row: (int(row["sequence_index"]), str(row["candidate_id"])),
-    )
 
     packages: dict[str, dict[str, Any]] = {}
     entries: list[dict[str, Any]] = []
@@ -101,9 +101,7 @@ def build_work_queue(
                 f"candidate {candidate_id} produced an invalid package: {exc}"
             ) from exc
 
-        package_path = (
-            f"{package_path_prefix.rstrip('/')}/{candidate_id}.json"
-        )
+        package_path = f"{package_path_prefix.rstrip('/')}/{candidate_id}.json"
         batch_number = ((position - 1) % batch_count) + 1
         packages[package_path] = package
         entries.append(
@@ -142,7 +140,7 @@ def build_work_queue(
     validate_work_queue(
         manifest=manifest,
         packages=packages,
-        candidates=candidates,
+        candidates=ordered,
         pages=pages,
         candidate_freeze=candidate_freeze,
     )
