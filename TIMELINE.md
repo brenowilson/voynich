@@ -143,3 +143,29 @@ The institutional image inventory was converted into deterministic page, side, p
 
 ### Status
 Completed and ready for pilot-set selection.
+
+## 2026-07-05 — PILOT-CANDIDATES-FREEZE-0001 declared
+
+### Result
+A metadata-only candidate pool was selected and frozen before any visual outcome was coded.
+
+### Evidence
+- Frozen candidates: `25`.
+- Ordinary non-foldout candidates: `14`.
+- Composite or fragmented candidates: `10`.
+- Additional ordinary foldout-complex representative: `1`.
+- Source-sequence bins represented: `8 / 8`.
+- Foldout complexes represented: `7 / 7`.
+- Institutionally explicit 85–86 sextuple-leaf panels retained: `4 / 4`.
+- Candidate-set SHA-256: `d460d6cc7c200f87e2b3182c1783079a6181bad01d0a83a8bd899b0cc7b8c113`.
+- Visual outcomes used: `0`.
+- External transliterations used: `0`.
+
+### Consequences
+- Candidate eligibility is immutable before blinded visual coding begins.
+- Support views, unverified records and non-canonical PDF-derived pages are excluded.
+- Conventional sections, semantic interpretations, Currier classes and glyph statistics did not influence the pool.
+- Adding or removing a candidate now requires revoking the freeze and restarting visual coding.
+
+### Status
+Candidate pool frozen; blinded visual coding pending.
