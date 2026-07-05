@@ -20,6 +20,11 @@ class ObservationWorkQueueError(RuntimeError):
     """Raised when a work queue cannot be built from frozen canonical inputs."""
 
 
+DEFAULT_PACKAGE_PREFIX = (
+    "corpus/pilots/PILOT-0001/observation-work-queue/packages"
+)
+
+
 def canonical_records_sha256(records: Iterable[dict[str, Any]]) -> str:
     payload = "\n".join(
         json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -47,7 +52,7 @@ def build_work_queue(
     candidates: list[dict[str, Any]],
     pages: list[dict[str, Any]],
     candidate_freeze: dict[str, Any],
-    package_root: str,
+    package_path_prefix: str = DEFAULT_PACKAGE_PREFIX,
     batch_count: int = 5,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
     if batch_count <= 0:
@@ -61,18 +66,14 @@ def build_work_queue(
 
     candidates_by_id = unique_index(candidates, "candidate_id", "candidate set")
     pages_by_panel = unique_index(pages, "photographic_panel_id", "page manifest")
-
-    ordered_candidates = sorted(
+    ordered = sorted(
         candidates,
-        key=lambda row: (
-            int(row["sequence_index"]),
-            str(row["candidate_id"]),
-        ),
+        key=lambda row: (int(row["sequence_index"]), str(row["candidate_id"])),
     )
+
     packages: dict[str, dict[str, Any]] = {}
     entries: list[dict[str, Any]] = []
-
-    for position, candidate in enumerate(ordered_candidates, start=1):
+    for position, candidate in enumerate(ordered, start=1):
         candidate_id = str(candidate["candidate_id"])
         panel_id = str(candidate["photographic_panel_id"])
         page = pages_by_panel.get(panel_id)
@@ -84,9 +85,10 @@ def build_work_queue(
             raise ObservationWorkQueueError(
                 f"candidate {candidate_id} source SHA-256 differs from page manifest"
             )
-        if int(candidate["width_px"]) != int(page.get("width_px") or 0) or int(
-            candidate["height_px"]
-        ) != int(page.get("height_px") or 0):
+        if (
+            int(candidate["width_px"]) != int(page.get("width_px") or 0)
+            or int(candidate["height_px"]) != int(page.get("height_px") or 0)
+        ):
             raise ObservationWorkQueueError(
                 f"candidate {candidate_id} dimensions differ from page manifest"
             )
@@ -99,11 +101,10 @@ def build_work_queue(
                 f"candidate {candidate_id} produced an invalid package: {exc}"
             ) from exc
 
-        package_path = f"{package_root.rstrip('/')}/{candidate_id}.json"
-        package_digest = canonical_sha256(package)
+        package_path = (
+            f"{package_path_prefix.rstrip('/')}/{candidate_id}.json"
+        )
         batch_number = ((position - 1) % batch_count) + 1
-        batch_id = f"OBS-BATCH-PILOT-0001-{batch_number:02d}"
-
         packages[package_path] = package
         entries.append(
             {
@@ -113,8 +114,8 @@ def build_work_queue(
                 "source_sha256": str(candidate["source_sha256"]),
                 "package_id": str(package["package_id"]),
                 "package_path": package_path,
-                "package_sha256": package_digest,
-                "batch_id": batch_id,
+                "package_sha256": canonical_sha256(package),
+                "batch_id": f"OBS-BATCH-PILOT-0001-{batch_number:02d}",
                 "annotation_status": "blank",
             }
         )
@@ -122,7 +123,6 @@ def build_work_queue(
     if len(entries) != len(candidates_by_id):
         raise ObservationWorkQueueError("work queue does not cover every candidate")
 
-    package_set_sha256 = canonical_records_sha256(entries)
     manifest = {
         "schema_version": "0.1.0",
         "queue_id": "OBS-WORK-QUEUE-PILOT-0001-0001",
@@ -133,7 +133,7 @@ def build_work_queue(
         "package_count": len(entries),
         "batch_count": batch_count,
         "batching_rule": "source-sequence-round-robin",
-        "package_set_sha256": package_set_sha256,
+        "package_set_sha256": canonical_records_sha256(entries),
         "interpretive_outputs_used": False,
         "external_transliterations_used": False,
         "final_pilot_selection_used": False,
@@ -157,23 +157,24 @@ def validate_work_queue(
     pages: list[dict[str, Any]],
     candidate_freeze: dict[str, Any],
 ) -> dict[str, Any]:
-    if manifest.get("interpretive_outputs_used") is not False:
-        raise ObservationWorkQueueError("work queue used interpretive outputs")
-    if manifest.get("external_transliterations_used") is not False:
-        raise ObservationWorkQueueError("work queue used external transliterations")
-    if manifest.get("final_pilot_selection_used") is not False:
-        raise ObservationWorkQueueError("work queue used a final pilot selection")
+    for key in (
+        "interpretive_outputs_used",
+        "external_transliterations_used",
+        "final_pilot_selection_used",
+    ):
+        if manifest.get(key) is not False:
+            raise ObservationWorkQueueError(f"work queue violates {key}")
 
     candidates_by_id = unique_index(candidates, "candidate_id", "candidate set")
     pages_by_panel = unique_index(pages, "photographic_panel_id", "page manifest")
     entries = manifest.get("entries")
     if not isinstance(entries, list):
         raise ObservationWorkQueueError("manifest entries must be an array")
-    entry_by_candidate = unique_index(entries, "candidate_id", "work queue")
+    entries_by_candidate = unique_index(entries, "candidate_id", "work queue")
 
-    if set(entry_by_candidate) != set(candidates_by_id):
-        missing = sorted(set(candidates_by_id) - set(entry_by_candidate))
-        unexpected = sorted(set(entry_by_candidate) - set(candidates_by_id))
+    if set(entries_by_candidate) != set(candidates_by_id):
+        missing = sorted(set(candidates_by_id) - set(entries_by_candidate))
+        unexpected = sorted(set(entries_by_candidate) - set(candidates_by_id))
         raise ObservationWorkQueueError(
             f"candidate coverage mismatch; missing={missing}, unexpected={unexpected}"
         )
@@ -181,7 +182,7 @@ def validate_work_queue(
     package_ids: set[str] = set()
     panel_ids: set[str] = set()
     batch_ids: set[str] = set()
-    for candidate_id, entry in entry_by_candidate.items():
+    for candidate_id, entry in entries_by_candidate.items():
         candidate = candidates_by_id[candidate_id]
         panel_id = str(entry.get("photographic_panel_id") or "")
         panel_ids.add(panel_id)
@@ -199,13 +200,13 @@ def validate_work_queue(
         package = packages.get(package_path)
         if package is None:
             raise ObservationWorkQueueError(
-                f"{candidate_id}: missing package file {package_path}"
+                f"{candidate_id}: missing package {package_path}"
             )
         validate_package(package)
         if package["source"]["photographic_panel_id"] != panel_id:
             raise ObservationWorkQueueError(f"{candidate_id}: package panel mismatch")
         if package["source"]["source_sha256"] != entry.get("source_sha256"):
-            raise ObservationWorkQueueError(f"{candidate_id}: package source hash mismatch")
+            raise ObservationWorkQueueError(f"{candidate_id}: package source mismatch")
         if canonical_sha256(package) != entry.get("package_sha256"):
             raise ObservationWorkQueueError(f"{candidate_id}: package digest mismatch")
         if package.get("package_status") != "blank":
@@ -251,30 +252,30 @@ def write_work_queue(
     pages_path: Path,
     candidate_freeze_path: Path,
     output_root: Path,
+    package_path_prefix: str = DEFAULT_PACKAGE_PREFIX,
     batch_count: int = 5,
 ) -> dict[str, Any]:
     candidates = read_jsonl(candidates_path)
     pages = read_jsonl(pages_path)
     candidate_freeze = json.loads(candidate_freeze_path.read_text(encoding="utf-8"))
-    package_root = f"{output_root.as_posix().rstrip('/')}/packages"
     manifest, packages = build_work_queue(
         candidates=candidates,
         pages=pages,
         candidate_freeze=candidate_freeze,
-        package_root=package_root,
+        package_path_prefix=package_path_prefix,
         batch_count=batch_count,
     )
 
-    output_root.mkdir(parents=True, exist_ok=True)
+    local_package_root = output_root / "packages"
+    local_package_root.mkdir(parents=True, exist_ok=True)
     for package_path, package in packages.items():
-        path = Path(package_path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
+        local_path = local_package_root / Path(package_path).name
+        local_path.write_text(
             json.dumps(package, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
             encoding="utf-8",
         )
-    manifest_path = output_root / "manifest.json"
-    manifest_path.write_text(
+    output_root.mkdir(parents=True, exist_ok=True)
+    (output_root / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
         encoding="utf-8",
     )
