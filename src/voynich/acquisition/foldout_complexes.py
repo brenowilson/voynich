@@ -120,6 +120,28 @@ def normalize_profile(value: dict[str, Any]) -> dict[str, int]:
     return {extent: int(value.get(extent, 0)) for extent in EXTENTS}
 
 
+def build_leaf_slots(
+    *, complex_id: str, profile: dict[str, int], assignment_status: str
+) -> list[dict[str, str]]:
+    total = sum(profile.values())
+    slots: list[dict[str, str]] = []
+    prefix = complex_id.removesuffix("-COMPLEX")
+    for extent in EXTENTS:
+        for index in range(1, profile[extent] + 1):
+            slots.append(
+                {
+                    "physical_leaf_id": f"{prefix}-LEAF-{extent.upper()}-{index:02d}",
+                    "extent": extent,
+                    "panel_assignment_status": (
+                        "all_complex_panels_assigned"
+                        if assignment_status == "institutionally_explicit" and total == 1
+                        else "unresolved"
+                    ),
+                }
+            )
+    return slots
+
+
 def build_complexes(
     *, pages: list[dict[str, Any]], config: dict[str, Any]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
@@ -163,18 +185,34 @@ def build_complexes(
         ]
         covered_candidate_panels.update(candidate_panels)
 
+        profile = normalize_profile(source["folding_leaf_profile"])
+        complex_id = str(source["complex_id"])
+        assignment_status = str(source["assignment_status"])
+        leaf_slots = build_leaf_slots(
+            complex_id=complex_id,
+            profile=profile,
+            assignment_status=assignment_status,
+        )
+        explicit_leaf_id = (
+            leaf_slots[0]["physical_leaf_id"]
+            if assignment_status == "institutionally_explicit" and len(leaf_slots) == 1
+            else ""
+        )
+
         complex_record = {
             "schema_version": "0.1.0",
-            "complex_id": str(source["complex_id"]),
+            "complex_id": complex_id,
             "quire_id": str(source["quire_id"]),
             "folio_range": {"minimum": lower, "maximum": upper},
-            "folding_leaf_profile": normalize_profile(source["folding_leaf_profile"]),
+            "folding_leaf_profile": profile,
+            "folding_leaf_count": len(leaf_slots),
+            "physical_leaf_slots": leaf_slots,
             "panel_ids": panel_ids,
             "institutional_ids": institutional_ids,
             "side_ids": side_ids,
             "panel_count": len(panel_ids),
             "label_candidate_panel_count": len(candidate_panels),
-            "assignment_status": str(source["assignment_status"]),
+            "assignment_status": assignment_status,
             "geometry_status": str(source["geometry_status"]),
             "reading_order": None,
             "evidence_source": str(config["source_url"]),
@@ -201,8 +239,10 @@ def build_complexes(
                     "coverage_modes": ";".join(coverages),
                     "label_candidate": page.get("composition_status") == "composite_candidate",
                     "relation_basis": "institutional_quire_profile_and_explicit_side_tokens",
-                    "physical_leaf_id": "",
-                    "physical_leaf_assignment_status": str(source["assignment_status"]),
+                    "physical_leaf_id": explicit_leaf_id,
+                    "physical_leaf_assignment_status": (
+                        "all_complex_panels_assigned" if explicit_leaf_id else assignment_status
+                    ),
                     "geometry_status": str(source["geometry_status"]),
                     "reading_order": "",
                 }
@@ -228,8 +268,9 @@ def build_complexes(
         "complex_count": len(complexes),
         "panel_relation_count": len(relations),
         "label_candidate_panel_count": len(all_candidate_panels),
-        "folding_leaf_count": sum(
-            sum(record["folding_leaf_profile"].values()) for record in complexes
+        "folding_leaf_count": sum(record["folding_leaf_count"] for record in complexes),
+        "explicitly_assigned_panel_count": sum(
+            bool(row["physical_leaf_id"]) for row in relations
         ),
     }
     return complexes, relations, summary
