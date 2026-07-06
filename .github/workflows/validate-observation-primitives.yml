@@ -16,6 +16,9 @@ on:
       - "corpus/templates/observation-package.example.json"
       - "corpus/pilots/PILOT-0001/candidates.jsonl"
       - "corpus/pilots/PILOT-0001/candidate-freeze.json"
+      - "corpus/pilots/PILOT-0001/observation-work-queue/**"
+      - "reports/observation-work-queue.md"
+      - "TIMELINE.md"
       - ".github/workflows/validate-observation-primitives.yml"
   push:
     branches: [main]
@@ -33,6 +36,9 @@ on:
       - "corpus/templates/observation-package.example.json"
       - "corpus/pilots/PILOT-0001/candidates.jsonl"
       - "corpus/pilots/PILOT-0001/candidate-freeze.json"
+      - "corpus/pilots/PILOT-0001/observation-work-queue/**"
+      - "reports/observation-work-queue.md"
+      - "TIMELINE.md"
       - ".github/workflows/validate-observation-primitives.yml"
   workflow_dispatch:
 
@@ -63,31 +69,12 @@ jobs:
           tests/unit/test_observation_model.py
           tests/unit/test_observation_work_queue.py
 
-      - name: Regenerate blank package example
+      - name: Regenerate observation outputs
         run: |
           python scripts/build_blank_observation_package.py \
             --pages sources/primary/manifests/pages.jsonl \
             --panel-id YDC-PANEL-1006094 \
             --output /tmp/observation-package.example.json
-
-      - name: Confirm deterministic example
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          committed = json.loads(
-              Path("corpus/templates/observation-package.example.json").read_text(encoding="utf-8")
-          )
-          regenerated = json.loads(
-              Path("/tmp/observation-package.example.json").read_text(encoding="utf-8")
-          )
-          if committed != regenerated:
-              raise SystemExit("committed blank observation package is not deterministic")
-          PY
-
-      - name: Build work queue in temporary directory
-        run: |
           python scripts/build_observation_work_queue.py \
             --candidates corpus/pilots/PILOT-0001/candidates.jsonl \
             --pages sources/primary/manifests/pages.jsonl \
@@ -95,66 +82,76 @@ jobs:
             --output-root /tmp/observation-work-queue \
             --batch-count 5
 
-      - name: Validate schemas and protocol invariants
+      - name: Validate committed and regenerated outputs
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
           from jsonschema import Draft202012Validator, FormatChecker
-          from voynich.observation.model import validate_package
+          from voynich.observation.model import read_jsonl, validate_package
+          from voynich.observation.work_queue import validate_work_queue
+
+          def load(path):
+              return json.loads(Path(path).read_text(encoding="utf-8"))
 
           checker = FormatChecker()
-          package_schema = json.loads(
-              Path("schemas/observation-package.schema.json").read_text(encoding="utf-8")
-          )
-          event_schema = json.loads(
-              Path("schemas/observation-event.schema.json").read_text(encoding="utf-8")
-          )
-          queue_schema = json.loads(
-              Path("schemas/observation-work-queue.schema.json").read_text(encoding="utf-8")
-          )
-          example = json.loads(
-              Path("corpus/templates/observation-package.example.json").read_text(encoding="utf-8")
-          )
-          manifest = json.loads(
-              Path("/tmp/observation-work-queue/manifest.json").read_text(encoding="utf-8")
-          )
-
+          package_schema = load("schemas/observation-package.schema.json")
+          event_schema = load("schemas/observation-event.schema.json")
+          queue_schema = load("schemas/observation-work-queue.schema.json")
           for schema in (package_schema, event_schema, queue_schema):
               Draft202012Validator.check_schema(schema)
 
+          committed_example = load("corpus/templates/observation-package.example.json")
+          regenerated_example = load("/tmp/observation-package.example.json")
+          if committed_example != regenerated_example:
+              raise SystemExit("blank observation example is not deterministic")
+
+          committed_root = Path("corpus/pilots/PILOT-0001/observation-work-queue")
+          regenerated_root = Path("/tmp/observation-work-queue")
+          committed_manifest = load(committed_root / "manifest.json")
+          regenerated_manifest = load(regenerated_root / "manifest.json")
+          if committed_manifest != regenerated_manifest:
+              raise SystemExit("committed work-queue manifest differs from regeneration")
+
           package_validator = Draft202012Validator(package_schema, format_checker=checker)
           queue_validator = Draft202012Validator(queue_schema, format_checker=checker)
-          errors = list(package_validator.iter_errors(example))
-          errors += list(queue_validator.iter_errors(manifest))
-          if errors:
-              raise SystemExit("; ".join(error.message for error in errors[:10]))
+          queue_errors = list(queue_validator.iter_errors(committed_manifest))
+          if queue_errors:
+              raise SystemExit("; ".join(error.message for error in queue_errors[:10]))
 
-          summary = validate_package(example)
-          assert summary["package_status"] == "blank"
-          assert example["source"]["source_sha256"] == (
-              "ab22d0c20cc0c4e754236a32960c650c7275ac9a51e0dd33c91060694cb6ac05"
+          committed_paths = sorted((committed_root / "packages").glob("*.json"))
+          regenerated_paths = sorted((regenerated_root / "packages").glob("*.json"))
+          if len(committed_paths) != 25 or len(regenerated_paths) != 25:
+              raise SystemExit(
+                  f"expected 25 packages; committed={len(committed_paths)}, regenerated={len(regenerated_paths)}"
+              )
+          if [path.name for path in committed_paths] != [path.name for path in regenerated_paths]:
+              raise SystemExit("committed and regenerated package filenames differ")
+
+          packages = {}
+          for committed_path, regenerated_path in zip(committed_paths, regenerated_paths):
+              committed = load(committed_path)
+              regenerated = load(regenerated_path)
+              if committed != regenerated:
+                  raise SystemExit(f"{committed_path} differs from deterministic regeneration")
+              errors = list(package_validator.iter_errors(committed))
+              if errors:
+                  raise SystemExit(f"{committed_path}: {errors[0].message}")
+              validate_package(committed)
+              packages[committed_path.as_posix()] = committed
+
+          candidates = read_jsonl(Path("corpus/pilots/PILOT-0001/candidates.jsonl"))
+          pages = read_jsonl(Path("sources/primary/manifests/pages.jsonl"))
+          candidate_freeze = load("corpus/pilots/PILOT-0001/candidate-freeze.json")
+          summary = validate_work_queue(
+              manifest=committed_manifest,
+              packages=packages,
+              candidates=candidates,
+              pages=pages,
+              candidate_freeze=candidate_freeze,
           )
-
-          package_paths = sorted(Path("/tmp/observation-work-queue/packages").glob("*.json"))
-          assert len(package_paths) == 25
-          for path in package_paths:
-              package = json.loads(path.read_text(encoding="utf-8"))
-              package_errors = list(package_validator.iter_errors(package))
-              if package_errors:
-                  raise SystemExit(f"{path}: {package_errors[0].message}")
-              validate_package(package)
-
-          assert manifest["package_count"] == 25
-          assert manifest["batch_count"] == 5
-          assert manifest["candidate_set_sha256"] == (
-              "d460d6cc7c200f87e2b3182c1783079a6181bad01d0a83a8bd899b0cc7b8c113"
-          )
-          assert manifest["interpretive_outputs_used"] is False
-          assert manifest["external_transliterations_used"] is False
-          assert manifest["final_pilot_selection_used"] is False
-          batch_sizes = {}
-          for entry in manifest["entries"]:
-              batch_sizes[entry["batch_id"]] = batch_sizes.get(entry["batch_id"], 0) + 1
-          assert sorted(batch_sizes.values()) == [5, 5, 5, 5, 5]
+          if summary["package_count"] != 25:
+              raise SystemExit("work-queue validator did not confirm 25 packages")
+          if sorted(summary["batch_sizes"].values()) != [5, 5, 5, 5, 5]:
+              raise SystemExit(f"unexpected batch sizes: {summary['batch_sizes']}")
           PY

@@ -192,3 +192,28 @@ The project gained a source-anchored, interpretation-neutral model for regions, 
 
 ### Status
 Protocol and validation infrastructure complete; production annotation packages not yet created.
+
+## 2026-07-06 — PILOT-0001 observation work queue materialized
+
+### Result
+All 25 frozen pilot candidates were prepared as deterministic revision-zero blank observation packages without using final-selection results or interpretive metadata.
+
+### Evidence
+- Source-anchored blank packages: `25`.
+- Unique candidate IDs: `25`.
+- Unique photographic panel IDs: `25`.
+- Deterministic batches: `5`.
+- Packages per batch: `5`.
+- Candidate-set SHA-256: `d460d6cc7c200f87e2b3182c1783079a6181bad01d0a83a8bd899b0cc7b8c113`.
+- Package-set SHA-256: `e49d132116aa2b819a2918a6f0395d93a2c1e5096022d36b8e04891c46a05690`.
+- Complete committed-output validation run: `28826281665`.
+- Audit report: `reports/observation-work-queue.md`.
+
+### Consequences
+- Every frozen candidate is ready to enter the `blank → draft → frozen` annotation lifecycle.
+- No candidate is promoted into the final 12-panel pilot by this materialization.
+- Annotation tooling and quality-control work can proceed while independent pilot adjudication remains unavailable.
+- External transliterations, semantic labels, glyph identities, token boundaries and reading-order claims remain absent.
+
+### Status
+Materialized and reproducible; source-anchored annotation has not yet begun.

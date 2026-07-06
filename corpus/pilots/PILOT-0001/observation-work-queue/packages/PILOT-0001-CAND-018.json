@@ -1,0 +1,39 @@
+{
+  "ambiguity_groups": [],
+  "annotator_id": null,
+  "coordinate_space": {
+    "display_transforms": [],
+    "height_px": 3788,
+    "origin": "top_left",
+    "units": "source_pixels",
+    "width_px": 4897,
+    "x_axis": "right",
+    "y_axis": "down"
+  },
+  "external_transliterations_used": false,
+  "glyph_candidates": [],
+  "lines": [],
+  "package_id": "OBS-PKG-YDC-PANEL-1006230-R000",
+  "package_status": "blank",
+  "protocol_id": "OBSERVATION-PROTOCOL-0001",
+  "reading_order_asserted": false,
+  "regions": [],
+  "revision": {
+    "created_at": null,
+    "revision_number": 0,
+    "supersedes_package_id": null
+  },
+  "revision_events": [],
+  "schema_version": "0.1.0",
+  "semantic_interpretation_used": false,
+  "source": {
+    "height_px": 3788,
+    "institutional_id": "1006230",
+    "institutional_label": "86v (part) (part of 85-86 foldout)",
+    "photographic_panel_id": "YDC-PANEL-1006230",
+    "source_sha256": "c3f9c2b497fb1ccbf9f6f0e10b240cbd79625165112a37470c3b509d86689616",
+    "source_url": "https://collections.library.yale.edu/iiif/2/1006230/full/full/0/default.jpg",
+    "stored_path": "sha256/c3/c3f9c2b497fb1ccbf9f6f0e10b240cbd79625165112a37470c3b509d86689616.jpg",
+    "width_px": 4897
+  }
+}
