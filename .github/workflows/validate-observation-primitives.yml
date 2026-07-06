@@ -17,6 +17,8 @@ on:
       - "corpus/pilots/PILOT-0001/candidates.jsonl"
       - "corpus/pilots/PILOT-0001/candidate-freeze.json"
       - "corpus/pilots/PILOT-0001/observation-work-queue/**"
+      - "reports/observation-work-queue.md"
+      - "TIMELINE.md"
       - ".github/workflows/validate-observation-primitives.yml"
   push:
     branches: [main]
@@ -35,6 +37,8 @@ on:
       - "corpus/pilots/PILOT-0001/candidates.jsonl"
       - "corpus/pilots/PILOT-0001/candidate-freeze.json"
       - "corpus/pilots/PILOT-0001/observation-work-queue/**"
+      - "reports/observation-work-queue.md"
+      - "TIMELINE.md"
       - ".github/workflows/validate-observation-primitives.yml"
   workflow_dispatch:
 
@@ -134,8 +138,7 @@ jobs:
               if errors:
                   raise SystemExit(f"{committed_path}: {errors[0].message}")
               validate_package(committed)
-              repo_path = committed_path.as_posix()
-              packages[repo_path] = committed
+              packages[committed_path.as_posix()] = committed
 
           candidates = read_jsonl(Path("corpus/pilots/PILOT-0001/candidates.jsonl"))
           pages = read_jsonl(Path("sources/primary/manifests/pages.jsonl"))
