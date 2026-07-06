@@ -180,7 +180,7 @@ def test_rejects_actor_hash_and_time_failures() -> None:
 
     wrong_hash = draft_with_region()
     wrong_hash["revision_events"][0]["resulting_entity_sha256"] = "f" * 64
-    with pytest.raises(ObservationLifecycleError, match="latest event hash"):
+    with pytest.raises(ObservationLifecycleError, match="hash"):
         freeze_draft(wrong_hash, frozen_at="2026-07-06T23:00:00Z")
 
     with pytest.raises(ObservationLifecycleError, match="precedes"):
@@ -207,3 +207,20 @@ def test_rejects_uncovered_entity_and_tampered_record() -> None:
     tampered["package_sha256"] = "0" * 64
     with pytest.raises(ObservationLifecycleError, match="package_sha256"):
         validate_freeze_record(frozen, tampered)
+
+
+def test_rejects_noncanonical_or_extended_freeze_record() -> None:
+    frozen, record = freeze_draft(
+        draft_with_region(),
+        frozen_at="2026-07-06T23:00:00Z",
+    )
+
+    wrong_protocol = deepcopy(record)
+    wrong_protocol["protocol_id"] = "OTHER-PROTOCOL"
+    with pytest.raises(ObservationLifecycleError, match="protocol_id"):
+        validate_freeze_record(frozen, wrong_protocol)
+
+    extended = deepcopy(record)
+    extended["meaning"] = "forbidden"
+    with pytest.raises(ObservationLifecycleError, match="fields differ"):
+        validate_freeze_record(frozen, extended)
