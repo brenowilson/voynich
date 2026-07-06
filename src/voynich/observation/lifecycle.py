@@ -11,7 +11,11 @@ from datetime import datetime
 import re
 from typing import Any
 
-from .model import canonical_sha256, validate_package
+from .model import (
+    ObservationValidationError,
+    canonical_sha256,
+    validate_package,
+)
 
 
 class ObservationLifecycleError(RuntimeError):
@@ -25,6 +29,26 @@ ENTITY_COLLECTIONS = {
     "glyph_candidates": ("glyph_id", "glyph_candidate"),
     "ambiguity_groups": ("ambiguity_group_id", "ambiguity_group"),
 }
+FREEZE_RECORD_KEYS = {
+    "schema_version",
+    "freeze_id",
+    "protocol_id",
+    "status",
+    "package_id",
+    "package_sha256",
+    "photographic_panel_id",
+    "source_sha256",
+    "revision_number",
+    "supersedes_package_id",
+    "annotator_id",
+    "created_at",
+    "frozen_at",
+    "entity_counts",
+    "revision_event_count",
+    "external_transliterations_used",
+    "semantic_interpretation_used",
+    "reading_order_asserted",
+}
 
 
 def _parse_timestamp(value: str, label: str) -> datetime:
@@ -33,33 +57,34 @@ def _parse_timestamp(value: str, label: str) -> datetime:
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as exc:
-        raise ObservationLifecycleError(f"{label} is not a valid ISO-8601 timestamp") from exc
+        raise ObservationLifecycleError(
+            f"{label} is not a valid ISO-8601 timestamp"
+        ) from exc
     if parsed.tzinfo is None:
         raise ObservationLifecycleError(f"{label} must include a timezone")
     return parsed
 
 
 def _validate_annotator_id(annotator_id: str) -> None:
-    if not isinstance(annotator_id, str) or not ANNOTATOR_PATTERN.fullmatch(annotator_id):
+    if not isinstance(annotator_id, str) or not ANNOTATOR_PATTERN.fullmatch(
+        annotator_id
+    ):
         raise ObservationLifecycleError(
             "annotator_id must match ^OBS-[A-Z0-9-]+$"
         )
 
 
+def _validate_observation_package(package: dict[str, Any], label: str) -> None:
+    try:
+        validate_package(package)
+    except (ObservationValidationError, KeyError, TypeError, ValueError) as exc:
+        raise ObservationLifecycleError(f"{label} is invalid: {exc}") from exc
+
+
 def _source_identity(package: dict[str, Any]) -> dict[str, Any]:
-    source = package["source"]
-    coordinate_space = package["coordinate_space"]
     return {
-        "photographic_panel_id": source["photographic_panel_id"],
-        "institutional_id": source["institutional_id"],
-        "source_url": source["source_url"],
-        "source_sha256": source["source_sha256"],
-        "stored_path": source["stored_path"],
-        "width_px": source["width_px"],
-        "height_px": source["height_px"],
-        "coordinate_width_px": coordinate_space["width_px"],
-        "coordinate_height_px": coordinate_space["height_px"],
-        "coordinate_units": coordinate_space["units"],
+        "source": deepcopy(package["source"]),
+        "coordinate_space": deepcopy(package["coordinate_space"]),
     }
 
 
@@ -73,7 +98,7 @@ def start_draft(
     revision-local events.
     """
 
-    validate_package(package)
+    _validate_observation_package(package, "input package")
     status = package.get("package_status")
     if status not in {"blank", "frozen"}:
         raise ObservationLifecycleError(
@@ -99,8 +124,10 @@ def start_draft(
     draft["revision_events"] = []
 
     if _source_identity(draft) != before_source:
-        raise ObservationLifecycleError("source identity changed during draft transition")
-    validate_package(draft)
+        raise ObservationLifecycleError(
+            "source identity changed during draft transition"
+        )
+    _validate_observation_package(draft, "resulting draft")
     return draft
 
 
@@ -113,7 +140,9 @@ def _index_entities(
         for entity in package.get(collection, []):
             entity_id = str(entity[id_key])
             if entity_id in entities:
-                raise ObservationLifecycleError(f"duplicate entity ID {entity_id}")
+                raise ObservationLifecycleError(
+                    f"duplicate entity ID {entity_id}"
+                )
             entities[entity_id] = entity
             kinds[entity_id] = kind
     return entities, kinds
@@ -124,17 +153,26 @@ def _validate_event_coverage(
 ) -> tuple[dict[str, dict[str, Any]], dict[str, int]]:
     entities, kinds = _index_entities(package)
     if not entities:
-        raise ObservationLifecycleError("a draft cannot be frozen without observations")
+        raise ObservationLifecycleError(
+            "a draft cannot be frozen without observations"
+        )
 
-    created_dt = _parse_timestamp(package["revision"]["created_at"], "created_at")
+    created_dt = _parse_timestamp(
+        package["revision"]["created_at"], "created_at"
+    )
     frozen_dt = _parse_timestamp(frozen_at, "frozen_at")
     if frozen_dt < created_dt:
-        raise ObservationLifecycleError("frozen_at precedes the draft creation time")
+        raise ObservationLifecycleError(
+            "frozen_at precedes the draft creation time"
+        )
 
     annotator_id = str(package["annotator_id"])
+    _validate_annotator_id(annotator_id)
     events = package.get("revision_events", [])
     if not events:
-        raise ObservationLifecycleError("a draft cannot be frozen without revision events")
+        raise ObservationLifecycleError(
+            "a draft cannot be frozen without revision events"
+        )
 
     events_by_entity: dict[str, list[dict[str, Any]]] = {
         entity_id: [] for entity_id in entities
@@ -142,13 +180,17 @@ def _validate_event_coverage(
     previous_time: datetime | None = None
     for event in events:
         event_id = str(event.get("event_id") or "")
-        event_dt = _parse_timestamp(str(event.get("occurred_at") or ""), event_id)
+        event_dt = _parse_timestamp(
+            str(event.get("occurred_at") or ""), event_id
+        )
         if event_dt < created_dt or event_dt > frozen_dt:
             raise ObservationLifecycleError(
                 f"event {event_id} lies outside the draft-to-freeze interval"
             )
         if previous_time is not None and event_dt < previous_time:
-            raise ObservationLifecycleError("revision events must be chronological")
+            raise ObservationLifecycleError(
+                "revision events must be chronological"
+            )
         previous_time = event_dt
 
         if event.get("actor_id") != annotator_id:
@@ -166,7 +208,10 @@ def _validate_event_coverage(
             )
         events_by_entity[entity_id].append(event)
 
-    counts = {collection: len(package.get(collection, [])) for collection in ENTITY_COLLECTIONS}
+    counts = {
+        collection: len(package.get(collection, []))
+        for collection in ENTITY_COLLECTIONS
+    }
     for entity_id, entity in entities.items():
         entity_events = events_by_entity[entity_id]
         if not entity_events:
@@ -203,7 +248,7 @@ def freeze_draft(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Freeze a fully covered draft and create its immutable freeze record."""
 
-    validate_package(package)
+    _validate_observation_package(package, "input draft")
     if package.get("package_status") != "draft":
         raise ObservationLifecycleError("only draft packages can be frozen")
 
@@ -214,7 +259,7 @@ def freeze_draft(
     frozen["package_status"] = "frozen"
     if _source_identity(frozen) != before_source:
         raise ObservationLifecycleError("source identity changed during freeze")
-    validate_package(frozen)
+    _validate_observation_package(frozen, "resulting frozen package")
 
     panel_id = str(frozen["source"]["photographic_panel_id"])
     revision_number = int(frozen["revision"]["revision_number"])
@@ -228,7 +273,9 @@ def freeze_draft(
         "photographic_panel_id": panel_id,
         "source_sha256": str(frozen["source"]["source_sha256"]),
         "revision_number": revision_number,
-        "supersedes_package_id": frozen["revision"]["supersedes_package_id"],
+        "supersedes_package_id": frozen["revision"][
+            "supersedes_package_id"
+        ],
         "annotator_id": str(frozen["annotator_id"]),
         "created_at": str(frozen["revision"]["created_at"]),
         "frozen_at": frozen_at,
@@ -247,13 +294,37 @@ def validate_freeze_record(
 ) -> dict[str, Any]:
     """Validate a freeze record against its frozen package."""
 
-    validate_package(package)
+    _validate_observation_package(package, "frozen package")
     if package.get("package_status") != "frozen":
-        raise ObservationLifecycleError("freeze records require a frozen package")
+        raise ObservationLifecycleError(
+            "freeze records require a frozen package"
+        )
+    if not isinstance(freeze_record, dict):
+        raise ObservationLifecycleError("freeze record must be an object")
+    if set(freeze_record) != FREEZE_RECORD_KEYS:
+        missing = sorted(FREEZE_RECORD_KEYS - set(freeze_record))
+        unexpected = sorted(set(freeze_record) - FREEZE_RECORD_KEYS)
+        raise ObservationLifecycleError(
+            f"freeze record fields differ; missing={missing}, unexpected={unexpected}"
+        )
+    if freeze_record.get("schema_version") != "0.1.0":
+        raise ObservationLifecycleError(
+            "freeze record schema_version must be 0.1.0"
+        )
+    if freeze_record.get("protocol_id") != "OBSERVATION-PROTOCOL-0001":
+        raise ObservationLifecycleError(
+            "freeze record protocol_id is not canonical"
+        )
+    if freeze_record.get("status") != "frozen":
+        raise ObservationLifecycleError(
+            "freeze record status must be frozen"
+        )
 
     panel_id = str(package["source"]["photographic_panel_id"])
     revision_number = int(package["revision"]["revision_number"])
-    expected_freeze_id = f"OBS-FREEZE-{panel_id}-R{revision_number:03d}"
+    expected_freeze_id = (
+        f"OBS-FREEZE-{panel_id}-R{revision_number:03d}"
+    )
     expected = {
         "freeze_id": expected_freeze_id,
         "package_id": package["package_id"],
@@ -261,14 +332,18 @@ def validate_freeze_record(
         "photographic_panel_id": panel_id,
         "source_sha256": package["source"]["source_sha256"],
         "revision_number": revision_number,
-        "supersedes_package_id": package["revision"]["supersedes_package_id"],
+        "supersedes_package_id": package["revision"][
+            "supersedes_package_id"
+        ],
         "annotator_id": package["annotator_id"],
         "created_at": package["revision"]["created_at"],
         "revision_event_count": len(package["revision_events"]),
     }
     for key, value in expected.items():
         if freeze_record.get(key) != value:
-            raise ObservationLifecycleError(f"freeze record mismatch for {key}")
+            raise ObservationLifecycleError(
+                f"freeze record mismatch for {key}"
+            )
 
     for key in (
         "external_transliterations_used",
@@ -276,16 +351,28 @@ def validate_freeze_record(
         "reading_order_asserted",
     ):
         if freeze_record.get(key) is not False:
-            raise ObservationLifecycleError(f"freeze record violates {key}")
+            raise ObservationLifecycleError(
+                f"freeze record violates {key}"
+            )
 
-    created_dt = _parse_timestamp(str(freeze_record.get("created_at") or ""), "created_at")
-    frozen_dt = _parse_timestamp(str(freeze_record.get("frozen_at") or ""), "frozen_at")
+    created_dt = _parse_timestamp(
+        str(freeze_record.get("created_at") or ""), "created_at"
+    )
+    frozen_at = str(freeze_record.get("frozen_at") or "")
+    frozen_dt = _parse_timestamp(frozen_at, "frozen_at")
     if frozen_dt < created_dt:
-        raise ObservationLifecycleError("freeze record time precedes draft creation")
+        raise ObservationLifecycleError(
+            "freeze record time precedes draft creation"
+        )
 
-    counts = {collection: len(package.get(collection, [])) for collection in ENTITY_COLLECTIONS}
+    _, counts = _validate_event_coverage(
+        package,
+        frozen_at=frozen_at,
+    )
     if freeze_record.get("entity_counts") != counts:
-        raise ObservationLifecycleError("freeze record entity counts do not match package")
+        raise ObservationLifecycleError(
+            "freeze record entity counts do not match package"
+        )
 
     return {
         "freeze_id": expected_freeze_id,
