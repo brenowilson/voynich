@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/observation-freeze-record.schema.json",
+  "title": "Voynich Observation Package Freeze Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "freeze_id",
+    "protocol_id",
+    "status",
+    "package_id",
+    "package_sha256",
+    "photographic_panel_id",
+    "source_sha256",
+    "revision_number",
+    "supersedes_package_id",
+    "annotator_id",
+    "created_at",
+    "frozen_at",
+    "entity_counts",
+    "revision_event_count",
+    "external_transliterations_used",
+    "semantic_interpretation_used",
+    "reading_order_asserted"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "freeze_id": {
+      "type": "string",
+      "pattern": "^OBS-FREEZE-YDC-PANEL-[0-9]+-R[0-9]{3}$"
+    },
+    "protocol_id": {"const": "OBSERVATION-PROTOCOL-0001"},
+    "status": {"const": "frozen"},
+    "package_id": {
+      "type": "string",
+      "pattern": "^OBS-PKG-YDC-PANEL-[0-9]+-R[0-9]{3}$"
+    },
+    "package_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "photographic_panel_id": {
+      "type": "string",
+      "pattern": "^YDC-PANEL-[0-9]+$"
+    },
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "revision_number": {"type": "integer", "minimum": 1, "maximum": 999},
+    "supersedes_package_id": {
+      "type": "string",
+      "pattern": "^OBS-PKG-YDC-PANEL-[0-9]+-R[0-9]{3}$"
+    },
+    "annotator_id": {"type": "string", "pattern": "^OBS-[A-Z0-9-]+$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "frozen_at": {"type": "string", "format": "date-time"},
+    "entity_counts": {
+      "type": "object",
+      "required": ["regions", "lines", "glyph_candidates", "ambiguity_groups"],
+      "properties": {
+        "regions": {"type": "integer", "minimum": 0},
+        "lines": {"type": "integer", "minimum": 0},
+        "glyph_candidates": {"type": "integer", "minimum": 0},
+        "ambiguity_groups": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "revision_event_count": {"type": "integer", "minimum": 1},
+    "external_transliterations_used": {"const": false},
+    "semantic_interpretation_used": {"const": false},
+    "reading_order_asserted": {"const": false}
+  },
+  "additionalProperties": false
+}
