@@ -5,19 +5,25 @@ on:
     paths:
       - "docs/protocols/observation-primitives.md"
       - "docs/protocols/observation-work-queue.md"
+      - "docs/protocols/observation-package-lifecycle.md"
       - "schemas/observation-package.schema.json"
       - "schemas/observation-event.schema.json"
       - "schemas/observation-work-queue.schema.json"
+      - "schemas/observation-freeze-record.schema.json"
       - "src/voynich/observation/**"
       - "scripts/build_blank_observation_package.py"
       - "scripts/build_observation_work_queue.py"
+      - "scripts/start_observation_draft.py"
+      - "scripts/freeze_observation_package.py"
       - "tests/unit/test_observation_model.py"
       - "tests/unit/test_observation_work_queue.py"
+      - "tests/unit/test_observation_lifecycle.py"
       - "corpus/templates/observation-package.example.json"
       - "corpus/pilots/PILOT-0001/candidates.jsonl"
       - "corpus/pilots/PILOT-0001/candidate-freeze.json"
       - "corpus/pilots/PILOT-0001/observation-work-queue/**"
       - "reports/observation-work-queue.md"
+      - "reports/observation-lifecycle.md"
       - "TIMELINE.md"
       - ".github/workflows/validate-observation-primitives.yml"
   push:
@@ -25,19 +31,25 @@ on:
     paths:
       - "docs/protocols/observation-primitives.md"
       - "docs/protocols/observation-work-queue.md"
+      - "docs/protocols/observation-package-lifecycle.md"
       - "schemas/observation-package.schema.json"
       - "schemas/observation-event.schema.json"
       - "schemas/observation-work-queue.schema.json"
+      - "schemas/observation-freeze-record.schema.json"
       - "src/voynich/observation/**"
       - "scripts/build_blank_observation_package.py"
       - "scripts/build_observation_work_queue.py"
+      - "scripts/start_observation_draft.py"
+      - "scripts/freeze_observation_package.py"
       - "tests/unit/test_observation_model.py"
       - "tests/unit/test_observation_work_queue.py"
+      - "tests/unit/test_observation_lifecycle.py"
       - "corpus/templates/observation-package.example.json"
       - "corpus/pilots/PILOT-0001/candidates.jsonl"
       - "corpus/pilots/PILOT-0001/candidate-freeze.json"
       - "corpus/pilots/PILOT-0001/observation-work-queue/**"
       - "reports/observation-work-queue.md"
+      - "reports/observation-lifecycle.md"
       - "TIMELINE.md"
       - ".github/workflows/validate-observation-primitives.yml"
   workflow_dispatch:
@@ -68,6 +80,7 @@ jobs:
           pytest -q
           tests/unit/test_observation_model.py
           tests/unit/test_observation_work_queue.py
+          tests/unit/test_observation_lifecycle.py
 
       - name: Regenerate observation outputs
         run: |
@@ -82,12 +95,73 @@ jobs:
             --output-root /tmp/observation-work-queue \
             --batch-count 5
 
-      - name: Validate committed and regenerated outputs
+      - name: Exercise deterministic lifecycle commands
+        run: |
+          python scripts/start_observation_draft.py \
+            --input corpus/pilots/PILOT-0001/observation-work-queue/packages/PILOT-0001-CAND-001.json \
+            --annotator-id OBS-CI-LIFECYCLE \
+            --created-at 2026-07-06T22:30:00Z \
+            --output /tmp/lifecycle-draft-a.json
+          python scripts/start_observation_draft.py \
+            --input corpus/pilots/PILOT-0001/observation-work-queue/packages/PILOT-0001-CAND-001.json \
+            --annotator-id OBS-CI-LIFECYCLE \
+            --created-at 2026-07-06T22:30:00Z \
+            --output /tmp/lifecycle-draft-b.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from voynich.observation.model import canonical_sha256
+
+          first = json.loads(Path("/tmp/lifecycle-draft-a.json").read_text())
+          second = json.loads(Path("/tmp/lifecycle-draft-b.json").read_text())
+          if first != second:
+              raise SystemExit("draft CLI is not deterministic")
+
+          region = {
+              "region_id": "OBSREG-YDC-PANEL-1006094-0001",
+              "role": "uncertain",
+              "polygon": [[100, 100], [300, 100], [300, 300], [100, 300]],
+              "confidence": 0.5,
+              "visibility": "clear",
+              "observation_status": "active",
+              "evidence_note": "Synthetic CI lifecycle geometry; not corpus annotation.",
+          }
+          first["regions"] = [region]
+          first["revision_events"] = [{
+              "event_id": "OBSEVENT-YDC-PANEL-1006094-000001",
+              "event_type": "add",
+              "entity_kind": "region",
+              "entity_id": region["region_id"],
+              "actor_id": "OBS-CI-LIFECYCLE",
+              "occurred_at": "2026-07-06T22:45:00Z",
+              "previous_entity_sha256": None,
+              "resulting_entity_sha256": canonical_sha256(region),
+              "reason": "Exercise lifecycle freeze gate in ephemeral CI data.",
+              "uncertainty_change": "not_applicable",
+          }]
+          Path("/tmp/lifecycle-ready-draft.json").write_text(
+              json.dumps(first, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          python scripts/freeze_observation_package.py \
+            --input /tmp/lifecycle-ready-draft.json \
+            --frozen-at 2026-07-06T23:00:00Z \
+            --package-output /tmp/lifecycle-frozen-a.json \
+            --freeze-output /tmp/lifecycle-freeze-a.json
+          python scripts/freeze_observation_package.py \
+            --input /tmp/lifecycle-ready-draft.json \
+            --frozen-at 2026-07-06T23:00:00Z \
+            --package-output /tmp/lifecycle-frozen-b.json \
+            --freeze-output /tmp/lifecycle-freeze-b.json
+
+      - name: Validate committed, regenerated and lifecycle outputs
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
           from jsonschema import Draft202012Validator, FormatChecker
+          from voynich.observation.lifecycle import validate_freeze_record
           from voynich.observation.model import read_jsonl, validate_package
           from voynich.observation.work_queue import validate_work_queue
 
@@ -98,7 +172,8 @@ jobs:
           package_schema = load("schemas/observation-package.schema.json")
           event_schema = load("schemas/observation-event.schema.json")
           queue_schema = load("schemas/observation-work-queue.schema.json")
-          for schema in (package_schema, event_schema, queue_schema):
+          freeze_schema = load("schemas/observation-freeze-record.schema.json")
+          for schema in (package_schema, event_schema, queue_schema, freeze_schema):
               Draft202012Validator.check_schema(schema)
 
           committed_example = load("corpus/templates/observation-package.example.json")
@@ -115,6 +190,7 @@ jobs:
 
           package_validator = Draft202012Validator(package_schema, format_checker=checker)
           queue_validator = Draft202012Validator(queue_schema, format_checker=checker)
+          freeze_validator = Draft202012Validator(freeze_schema, format_checker=checker)
           queue_errors = list(queue_validator.iter_errors(committed_manifest))
           if queue_errors:
               raise SystemExit("; ".join(error.message for error in queue_errors[:10]))
@@ -154,4 +230,20 @@ jobs:
               raise SystemExit("work-queue validator did not confirm 25 packages")
           if sorted(summary["batch_sizes"].values()) != [5, 5, 5, 5, 5]:
               raise SystemExit(f"unexpected batch sizes: {summary['batch_sizes']}")
+
+          frozen_a = load("/tmp/lifecycle-frozen-a.json")
+          frozen_b = load("/tmp/lifecycle-frozen-b.json")
+          freeze_a = load("/tmp/lifecycle-freeze-a.json")
+          freeze_b = load("/tmp/lifecycle-freeze-b.json")
+          if frozen_a != frozen_b or freeze_a != freeze_b:
+              raise SystemExit("freeze CLI is not deterministic")
+          frozen_errors = list(package_validator.iter_errors(frozen_a))
+          freeze_errors = list(freeze_validator.iter_errors(freeze_a))
+          if frozen_errors or freeze_errors:
+              errors = frozen_errors + freeze_errors
+              raise SystemExit("; ".join(error.message for error in errors[:10]))
+          validate_package(frozen_a)
+          lifecycle_summary = validate_freeze_record(frozen_a, freeze_a)
+          if lifecycle_summary["entity_count"] != 1:
+              raise SystemExit("lifecycle validation did not confirm the ephemeral entity")
           PY
