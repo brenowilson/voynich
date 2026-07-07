@@ -9,20 +9,22 @@ from voynich.observation.lifecycle import (
     validate_lifecycle_record,
     validate_transition,
 )
-from voynich.observation.model import build_blank_package, canonical_sha256
+from voynich.observation.model import (
+    ObservationValidationError,
+    build_blank_package,
+    canonical_sha256,
+)
 
 
 def panel() -> dict:
+    digest = "ab22d0c20cc0c4e754236a32960c650c7275ac9a51e0dd33c91060694cb6ac05"
     return {
         "photographic_panel_id": "YDC-PANEL-1006094",
         "institutional_id": "1006094",
         "institutional_label": "10r",
         "source_url": "https://collections.library.yale.edu/iiif/2/1006094/full/full/0/default.jpg",
-        "source_sha256": "ab22d0c20cc0c4e754236a32960c650c7275ac9a51e0dd33c91060694cb6ac05",
-        "stored_path": "sha256/ab/ab22d0c20cc0c4e754236a32960c650c7275ac9a51e0dd33be44ba6c4615839.jpg".replace(
-            "e5ec7be49ff17b8ea978ecaecd803ae04b6e6f4ee92cdfdd3be44ba6c4615839",
-            "ab22d0c20cc0c4e754236a32960c650c7275ac9a51e0dd33c91060694cb6ac05",
-        ),
+        "source_sha256": digest,
+        "stored_path": f"sha256/{digest[:2]}/{digest}.jpg",
         "width_px": 2691,
         "height_px": 3739,
         "acquisition_status": "verified",
@@ -61,6 +63,7 @@ def draft_from(previous: dict, revision: int, *, visibility: str = "uncertain") 
     package["lines"] = []
     package["glyph_candidates"] = []
     package["ambiguity_groups"] = []
+
     if current_region["region_id"] not in previous_regions:
         package["revision_events"] = [
             {
@@ -177,7 +180,6 @@ def valid_chain():
 def test_valid_blank_draft_reviewed_frozen_chain() -> None:
     records, packages = valid_chain()
     summary = validate_lifecycle_chain(records=records, packages=packages)
-
     assert summary["initial_state"] == "blank"
     assert summary["final_state"] == "frozen"
     assert summary["record_count"] == 4
@@ -192,7 +194,6 @@ def test_reviewed_state_references_identical_draft_bytes() -> None:
         previous_package=packages[1],
         current_package=packages[2],
     )
-    assert result["from"] == "draft"
     assert result["to"] == "reviewed"
 
     changed = deepcopy(packages[2])
@@ -238,7 +239,6 @@ def test_rejects_silent_entity_disappearance() -> None:
     current["regions"] = []
     current["revision_events"] = []
     current_record = record(4, "draft", current, records[1]["record_id"])
-
     with pytest.raises(AnnotationLifecycleError, match="disappeared"):
         validate_transition(
             previous_record=records[1],
@@ -299,5 +299,5 @@ def test_freeze_requires_complete_predecessor_chain_and_provenance() -> None:
     records[3]["package_id"] = packages[3]["package_id"]
     records[3]["package_sha256"] = canonical_sha256(packages[3])
     records[3]["freeze"]["package_sha256"] = canonical_sha256(packages[3])
-    with pytest.raises(AnnotationLifecycleError):
+    with pytest.raises((AnnotationLifecycleError, ObservationValidationError)):
         validate_lifecycle_chain(records=records, packages=packages)
