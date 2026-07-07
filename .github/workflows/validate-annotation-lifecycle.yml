@@ -1,0 +1,65 @@
+name: Validate annotation lifecycle
+
+on:
+  pull_request:
+    paths:
+      - "docs/protocols/annotation-lifecycle.md"
+      - "docs/adr/0002-technical-review-is-not-scientific-adjudication.md"
+      - "reports/annotation-lifecycle.md"
+      - "schemas/annotation-lifecycle-record.schema.json"
+      - "src/voynich/observation/lifecycle.py"
+      - "scripts/validate_annotation_lifecycle.py"
+      - "tests/unit/test_annotation_lifecycle.py"
+      - "tests/unit/test_annotation_lifecycle_schema.py"
+      - ".github/workflows/validate-annotation-lifecycle.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/protocols/annotation-lifecycle.md"
+      - "docs/adr/0002-technical-review-is-not-scientific-adjudication.md"
+      - "reports/annotation-lifecycle.md"
+      - "schemas/annotation-lifecycle-record.schema.json"
+      - "src/voynich/observation/lifecycle.py"
+      - "scripts/validate_annotation_lifecycle.py"
+      - "tests/unit/test_annotation_lifecycle.py"
+      - "tests/unit/test_annotation_lifecycle_schema.py"
+      - ".github/workflows/validate-annotation-lifecycle.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install validation dependencies
+        run: python -m pip install pytest jsonschema
+      - name: Validate lifecycle schema
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+
+          schema = json.loads(
+              Path("schemas/annotation-lifecycle-record.schema.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          Draft202012Validator.check_schema(schema)
+          PY
+      - name: Run lifecycle tests
+        run: >-
+          pytest -q
+          tests/unit/test_annotation_lifecycle.py
+          tests/unit/test_annotation_lifecycle_schema.py
