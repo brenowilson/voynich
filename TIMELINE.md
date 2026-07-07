@@ -241,3 +241,43 @@ The project gained deterministic lifecycle and freeze gates for source-anchored 
 
 ### Status
 Lifecycle protocol and tooling validated; no production annotation package has entered draft state.
+
+## 2026-07-07 — REGION-ANNOTATION-TRIAL-0001 prepared
+
+### Result
+A metadata-only five-panel region trial was selected from the committed observation work queue without using visual-coding outcomes or final pilot selection.
+
+### Evidence
+- Selected trial packages: `5`.
+- Work-queue batches represented: `5 / 5`.
+- Selection rule: earliest `single_side_or_unspecified` candidate in each deterministic batch.
+- Selected candidates: `PILOT-0001-CAND-001` through `PILOT-0001-CAND-005`.
+- Trial-set SHA-256: `3685282f851d1d14b798716077041a2070d895570c589c57ef318664e11a9988`.
+- Validation run: `28887175088`.
+
+### Consequences
+- Region-only draft mechanics can be tested on a controlled set without promoting panels into the final pilot.
+- Lines, glyphs, scientific adjudication and production freeze remain unauthorized.
+
+### Status
+Trial prepared; no region observations have been recorded.
+
+## 2026-07-07 — REGION-AUTHORING-PACKETS-0001 materialized
+
+### Result
+Five source-pixel JSON authoring templates and five SVG coordinate overlays were generated for the controlled region trial.
+
+### Evidence
+- Empty authoring templates: `5`.
+- Source-pixel SVG overlays: `5`.
+- Packet-set SHA-256: `9b0343ee18b2b5d35fb95ee4711bddb92893a26def51a607c3fdc766fc6cd50a`.
+- Embedded Yale image binaries: `0`.
+- Authoring-packet validation run: `28887992619`.
+
+### Consequences
+- Annotators can enter polygons in canonical source-pixel coordinates while the repository stores only URLs and vector data.
+- Completed packets can be converted into valid `R001 draft` packages and lifecycle records.
+- Technical acceptance, scientific adjudication and production freeze remain separate future gates.
+
+### Status
+Authoring packets ready; no observational outcome has been entered.
