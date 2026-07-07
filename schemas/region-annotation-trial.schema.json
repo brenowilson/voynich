@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/region-annotation-trial.schema.json",
+  "title": "Controlled Region Annotation Trial",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "trial_id",
+    "status",
+    "observation_protocol_id",
+    "lifecycle_protocol_id",
+    "work_queue_id",
+    "candidate_set_sha256",
+    "work_queue_package_set_sha256",
+    "selection_rule",
+    "selected_count",
+    "batch_count",
+    "trial_set_sha256",
+    "visual_outcomes_used",
+    "external_transliterations_used",
+    "final_pilot_selection_used",
+    "scientific_adjudication_used",
+    "production_freeze_authorized",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "trial_id": {"const": "REGION-ANNOTATION-TRIAL-0001"},
+    "status": {"const": "prepared"},
+    "observation_protocol_id": {"const": "OBSERVATION-PROTOCOL-0001"},
+    "lifecycle_protocol_id": {"const": "ANNOTATION-LIFECYCLE-0001"},
+    "work_queue_id": {"const": "OBS-WORK-QUEUE-PILOT-0001-0001"},
+    "candidate_set_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "work_queue_package_set_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "selection_rule": {
+      "const": "lowest-source-sequence-single-side-per-work-queue-batch"
+    },
+    "selected_count": {"const": 5},
+    "batch_count": {"const": 5},
+    "trial_set_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "visual_outcomes_used": {"const": false},
+    "external_transliterations_used": {"const": false},
+    "final_pilot_selection_used": {"const": false},
+    "scientific_adjudication_used": {"const": false},
+    "production_freeze_authorized": {"const": false},
+    "entries": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": [
+          "batch_id",
+          "candidate_id",
+          "photographic_panel_id",
+          "sequence_index",
+          "composition_status",
+          "source_sha256",
+          "blank_package_id",
+          "blank_package_path",
+          "blank_package_sha256",
+          "selection_reason",
+          "trial_annotation_status"
+        ],
+        "properties": {
+          "batch_id": {"type": "string", "pattern": "^OBS-BATCH-PILOT-0001-0[1-5]$"},
+          "candidate_id": {"type": "string", "pattern": "^PILOT-0001-CAND-[0-9]{3}$"},
+          "photographic_panel_id": {"type": "string", "pattern": "^YDC-PANEL-[0-9]+$"},
+          "sequence_index": {"type": "integer", "minimum": 1},
+          "composition_status": {"const": "single_side_or_unspecified"},
+          "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "blank_package_id": {
+            "type": "string",
+            "pattern": "^OBS-PKG-YDC-PANEL-[0-9]+-R000$"
+          },
+          "blank_package_path": {
+            "type": "string",
+            "pattern": "^corpus/pilots/PILOT-0001/observation-work-queue/packages/PILOT-0001-CAND-[0-9]{3}\\.json$"
+          },
+          "blank_package_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "selection_reason": {"type": "string", "minLength": 1},
+          "trial_annotation_status": {"const": "planned"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
