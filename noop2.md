@@ -1,1 +1,0 @@
-Annotation lifecycle branch checkpoint.
