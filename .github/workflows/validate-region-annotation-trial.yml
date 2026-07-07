@@ -1,0 +1,101 @@
+name: Validate region annotation trial
+
+on:
+  pull_request:
+    paths:
+      - "docs/protocols/region-annotation-trial.md"
+      - "schemas/region-annotation-trial.schema.json"
+      - "src/voynich/observation/region_trial.py"
+      - "scripts/build_region_trial.py"
+      - "tests/unit/test_region_annotation_trial.py"
+      - "corpus/pilots/PILOT-0001/region-annotation-trial/manifest.json"
+      - ".github/workflows/validate-region-annotation-trial.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/protocols/region-annotation-trial.md"
+      - "schemas/region-annotation-trial.schema.json"
+      - "src/voynich/observation/region_trial.py"
+      - "scripts/build_region_trial.py"
+      - "tests/unit/test_region_annotation_trial.py"
+      - "corpus/pilots/PILOT-0001/region-annotation-trial/manifest.json"
+      - ".github/workflows/validate-region-annotation-trial.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install validation dependencies
+        run: python -m pip install pytest jsonschema
+      - name: Run trial tests
+        run: pytest -q tests/unit/test_region_annotation_trial.py
+      - name: Regenerate trial manifest
+        run: |
+          python scripts/build_region_trial.py \
+            --queue corpus/pilots/PILOT-0001/observation-work-queue/manifest.json \
+            --candidates corpus/pilots/PILOT-0001/candidates.jsonl \
+            --output /tmp/region-annotation-trial.json
+      - name: Validate schema and deterministic selection
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+          from voynich.observation.model import read_jsonl
+          from voynich.observation.region_trial import validate_trial_manifest
+
+          def load(path):
+              return json.loads(Path(path).read_text(encoding="utf-8"))
+
+          schema = load("schemas/region-annotation-trial.schema.json")
+          committed = load(
+              "corpus/pilots/PILOT-0001/region-annotation-trial/manifest.json"
+          )
+          regenerated = load("/tmp/region-annotation-trial.json")
+          queue = load(
+              "corpus/pilots/PILOT-0001/observation-work-queue/manifest.json"
+          )
+          candidates = read_jsonl(
+              Path("corpus/pilots/PILOT-0001/candidates.jsonl")
+          )
+
+          Draft202012Validator.check_schema(schema)
+          errors = list(Draft202012Validator(schema).iter_errors(committed))
+          if errors:
+              raise SystemExit("; ".join(error.message for error in errors[:10]))
+          if committed != regenerated:
+              raise SystemExit("committed trial manifest differs from regeneration")
+
+          summary = validate_trial_manifest(
+              manifest=committed,
+              work_queue=queue,
+              candidates=candidates,
+          )
+          assert summary["selected_count"] == 5
+          assert summary["batch_count"] == 5
+          assert [row["candidate_id"] for row in committed["entries"]] == [
+              "PILOT-0001-CAND-001",
+              "PILOT-0001-CAND-002",
+              "PILOT-0001-CAND-003",
+              "PILOT-0001-CAND-004",
+              "PILOT-0001-CAND-005",
+          ]
+          assert committed["trial_set_sha256"] == (
+              "3685282f851d1d14b798716077041a2070d895570c589c57ef318664e11a9988"
+          )
+          assert committed["production_freeze_authorized"] is False
+          assert committed["scientific_adjudication_used"] is False
+          PY
