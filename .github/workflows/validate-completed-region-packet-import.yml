@@ -1,0 +1,42 @@
+name: Validate completed region packet import
+
+on:
+  pull_request:
+    paths:
+      - "src/voynich/observation/packet_import.py"
+      - "scripts/import_completed_region_packet.py"
+      - "tests/unit/test_completed_region_packet_import.py"
+      - "docs/protocols/completed-region-packet-import.md"
+      - ".github/workflows/validate-completed-region-packet-import.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/voynich/observation/packet_import.py"
+      - "scripts/import_completed_region_packet.py"
+      - "tests/unit/test_completed_region_packet_import.py"
+      - "docs/protocols/completed-region-packet-import.md"
+      - ".github/workflows/validate-completed-region-packet-import.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install test dependency
+        run: python -m pip install pytest
+      - name: Run importer tests
+        run: pytest -q tests/unit/test_completed_region_packet_import.py
+      - name: Check importer help
+        run: python scripts/import_completed_region_packet.py --help
