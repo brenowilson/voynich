@@ -1,0 +1,99 @@
+name: Validate region authoring packets
+
+on:
+  pull_request:
+    paths:
+      - "docs/protocols/region-authoring-packets.md"
+      - "schemas/region-authoring-packet.schema.json"
+      - "src/voynich/observation/authoring_packet.py"
+      - "scripts/build_region_authoring_packets.py"
+      - "tests/unit/test_region_authoring_packets.py"
+      - "corpus/pilots/PILOT-0001/region-authoring-packets/**"
+      - ".github/workflows/validate-region-authoring-packets.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/protocols/region-authoring-packets.md"
+      - "schemas/region-authoring-packet.schema.json"
+      - "src/voynich/observation/authoring_packet.py"
+      - "scripts/build_region_authoring_packets.py"
+      - "tests/unit/test_region_authoring_packets.py"
+      - "corpus/pilots/PILOT-0001/region-authoring-packets/**"
+      - ".github/workflows/validate-region-authoring-packets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONPATH: src
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install validation dependencies
+        run: python -m pip install pytest jsonschema
+      - name: Run authoring packet tests
+        run: pytest -q tests/unit/test_region_authoring_packets.py
+      - name: Generate packet bundle
+        run: |
+          python scripts/build_region_authoring_packets.py \
+            --trial-manifest corpus/pilots/PILOT-0001/region-annotation-trial/manifest.json \
+            --repository-root . \
+            --output-root /tmp/region-authoring-packets
+      - name: Validate packet schemas and source-pixel overlays
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+          from jsonschema import Draft202012Validator, FormatChecker
+
+          schema = json.loads(
+              Path("schemas/region-authoring-packet.schema.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          Draft202012Validator.check_schema(schema)
+          validator = Draft202012Validator(schema, format_checker=FormatChecker())
+
+          root = Path("/tmp/region-authoring-packets")
+          manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+          packet_paths = sorted((root / "packets").glob("*.json"))
+          overlay_paths = sorted((root / "overlays").glob("*.svg"))
+          if len(packet_paths) != 5 or len(overlay_paths) != 5:
+              raise SystemExit(
+                  f"expected five packets and overlays; packets={len(packet_paths)}, overlays={len(overlay_paths)}"
+              )
+
+          for packet_path, overlay_path in zip(packet_paths, overlay_paths):
+              packet = json.loads(packet_path.read_text(encoding="utf-8"))
+              errors = list(validator.iter_errors(packet))
+              if errors:
+                  raise SystemExit(f"{packet_path}: {errors[0].message}")
+              if packet["regions"] or packet["annotator_id"] is not None:
+                  raise SystemExit(f"{packet_path}: template contains annotation outcome")
+              svg = overlay_path.read_text(encoding="utf-8")
+              width = packet["source"]["width_px"]
+              height = packet["source"]["height_px"]
+              if f'viewBox="0 0 {width} {height}"' not in svg:
+                  raise SystemExit(f"{overlay_path}: incorrect source-pixel viewBox")
+              if packet["source"]["source_url"] not in svg:
+                  raise SystemExit(f"{overlay_path}: institutional source URL missing")
+              if "data:image" in svg:
+                  raise SystemExit(f"{overlay_path}: embedded image binary detected")
+
+          if manifest["packet_count"] != 5:
+              raise SystemExit("packet manifest does not contain five packets")
+          if manifest["image_binaries_included"] is not False:
+              raise SystemExit("packet manifest claims image binaries")
+          if manifest["production_freeze_authorized"] is not False:
+              raise SystemExit("packet bundle authorizes production freeze")
+          PY
