@@ -1,0 +1,29 @@
+{
+  "annotated_at": null,
+  "annotator_id": null,
+  "blank_package": {
+    "package_id": "OBS-PKG-YDC-PANEL-1006118-R000",
+    "package_path": "corpus/pilots/PILOT-0001/observation-work-queue/packages/PILOT-0001-CAND-004.json",
+    "package_sha256": "4449ace154e6977026ff0b41ed54d18b1936c6ec51323ef9c0d7c09074bbc5be"
+  },
+  "candidate_id": "PILOT-0001-CAND-004",
+  "external_transliterations_used": false,
+  "packet_id": "REGION-PACKET-PILOT-0001-CAND-004",
+  "photographic_panel_id": "YDC-PANEL-1006118",
+  "production_freeze_authorized": false,
+  "reading_order_asserted": false,
+  "regions": [],
+  "schema_version": "0.1.0",
+  "scientific_adjudication_used": false,
+  "semantic_interpretation_used": false,
+  "source": {
+    "coordinate_origin": "top_left",
+    "coordinate_units": "source_pixels",
+    "height_px": 3705,
+    "source_sha256": "890e6cc9c8239fc90f760209da68f1cc6972de9d8738d33b6deaca50672ea449",
+    "source_url": "https://collections.library.yale.edu/iiif/2/1006118/full/full/0/default.jpg",
+    "width_px": 2650
+  },
+  "technical_review_completed": false,
+  "trial_id": "REGION-ANNOTATION-TRIAL-0001"
+}
