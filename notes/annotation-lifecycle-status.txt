@@ -1,0 +1,3 @@
+ANNOTATION-LIFECYCLE-0001 tooling checkpoint.
+Issue: #27.
+Scientific adjudication remains separate.
