@@ -197,7 +197,7 @@ def test_reviewed_state_references_identical_draft_bytes() -> None:
     assert result["to"] == "reviewed"
 
     changed = deepcopy(packages[2])
-    changed["regions"][0]["confidence"] = 0.9
+    changed["revision"]["created_at"] = "2026-07-07T09:00:00Z"
     records[2]["package_sha256"] = canonical_sha256(changed)
     with pytest.raises(AnnotationLifecycleError, match="identical immutable package bytes"):
         validate_transition(
