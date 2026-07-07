@@ -1,0 +1,14 @@
+{
+  "actor_id": "OBS-LIFECYCLE-01",
+  "freeze": null,
+  "lifecycle_protocol_id": "ANNOTATION-LIFECYCLE-0001",
+  "occurred_at": "2026-07-07T12:00:00Z",
+  "package_id": "OBS-PKG-YDC-PANEL-1006094-R000",
+  "package_sha256": "f8d1186c5291f38ec151d80bd6b3943b9f218730fd985202488467c7c96dd78f",
+  "previous_record_id": null,
+  "record_id": "OBSLIFE-YDC-PANEL-1006094-000000",
+  "schema_version": "0.1.0",
+  "scientific_adjudication_used": false,
+  "state": "blank",
+  "technical_review": null
+}
