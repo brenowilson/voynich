@@ -217,3 +217,27 @@ All 25 frozen pilot candidates were prepared as deterministic revision-zero blan
 
 ### Status
 Materialized and reproducible; source-anchored annotation has not yet begun.
+
+## 2026-07-07 — ANNOTATION-LIFECYCLE-0001 validated
+
+### Result
+The project gained deterministic lifecycle and freeze gates for source-anchored observation packages.
+
+### Evidence
+- Allowed lifecycle states: `blank`, `draft`, `reviewed`, `frozen`, `superseded`.
+- Invalid direct transitions are rejected.
+- Technical reviewer and annotator must be distinct.
+- Frozen package bytes cannot return to an editable state.
+- Silent entity disappearance is rejected.
+- Reduced uncertainty requires an explicit `uncertainty_update` event.
+- Freeze records bind package SHA-256, source SHA-256, predecessor chain and protocol versions.
+- Lifecycle and observation validation workflows passed in runs `28885898732` and `28885898723`.
+- Audit report: `reports/annotation-lifecycle.md`.
+
+### Consequences
+- Package-integrity review can proceed without pretending to be independent scientific adjudication.
+- Corrections to frozen packages require a new revision rather than in-place mutation.
+- Final PILOT-0001 selection remains governed separately by issue #3.
+
+### Status
+Lifecycle protocol and tooling validated; no production annotation package has entered draft state.
