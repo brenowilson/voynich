@@ -5,14 +5,18 @@ on:
     paths:
       - "docs/protocols/observation-primitives.md"
       - "docs/protocols/observation-work-queue.md"
+      - "docs/protocols/annotation-lifecycle.md"
       - "schemas/observation-package.schema.json"
       - "schemas/observation-event.schema.json"
       - "schemas/observation-work-queue.schema.json"
+      - "schemas/annotation-lifecycle-record.schema.json"
       - "src/voynich/observation/**"
       - "scripts/build_blank_observation_package.py"
       - "scripts/build_observation_work_queue.py"
+      - "scripts/validate_annotation_lifecycle.py"
       - "tests/unit/test_observation_model.py"
       - "tests/unit/test_observation_work_queue.py"
+      - "tests/unit/test_annotation_lifecycle.py"
       - "corpus/templates/observation-package.example.json"
       - "corpus/pilots/PILOT-0001/candidates.jsonl"
       - "corpus/pilots/PILOT-0001/candidate-freeze.json"
@@ -25,14 +29,18 @@ on:
     paths:
       - "docs/protocols/observation-primitives.md"
       - "docs/protocols/observation-work-queue.md"
+      - "docs/protocols/annotation-lifecycle.md"
       - "schemas/observation-package.schema.json"
       - "schemas/observation-event.schema.json"
       - "schemas/observation-work-queue.schema.json"
+      - "schemas/annotation-lifecycle-record.schema.json"
       - "src/voynich/observation/**"
       - "scripts/build_blank_observation_package.py"
       - "scripts/build_observation_work_queue.py"
+      - "scripts/validate_annotation_lifecycle.py"
       - "tests/unit/test_observation_model.py"
       - "tests/unit/test_observation_work_queue.py"
+      - "tests/unit/test_annotation_lifecycle.py"
       - "corpus/templates/observation-package.example.json"
       - "corpus/pilots/PILOT-0001/candidates.jsonl"
       - "corpus/pilots/PILOT-0001/candidate-freeze.json"
@@ -68,6 +76,7 @@ jobs:
           pytest -q
           tests/unit/test_observation_model.py
           tests/unit/test_observation_work_queue.py
+          tests/unit/test_annotation_lifecycle.py
 
       - name: Regenerate observation outputs
         run: |
@@ -98,7 +107,8 @@ jobs:
           package_schema = load("schemas/observation-package.schema.json")
           event_schema = load("schemas/observation-event.schema.json")
           queue_schema = load("schemas/observation-work-queue.schema.json")
-          for schema in (package_schema, event_schema, queue_schema):
+          lifecycle_schema = load("schemas/annotation-lifecycle-record.schema.json")
+          for schema in (package_schema, event_schema, queue_schema, lifecycle_schema):
               Draft202012Validator.check_schema(schema)
 
           committed_example = load("corpus/templates/observation-package.example.json")
