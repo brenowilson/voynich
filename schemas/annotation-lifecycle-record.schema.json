@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/brenowilson/voynich/schemas/annotation-lifecycle-record.schema.json",
+  "title": "Voynich Annotation Lifecycle Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "lifecycle_protocol_id",
+    "record_id",
+    "state",
+    "package_id",
+    "package_sha256",
+    "previous_record_id",
+    "actor_id",
+    "occurred_at",
+    "technical_review",
+    "freeze",
+    "scientific_adjudication_used"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "lifecycle_protocol_id": {"const": "ANNOTATION-LIFECYCLE-0001"},
+    "record_id": {
+      "type": "string",
+      "pattern": "^OBSLIFE-YDC-PANEL-[0-9]+-[0-9]{6}$"
+    },
+    "state": {
+      "enum": ["blank", "draft", "reviewed", "frozen", "superseded"]
+    },
+    "package_id": {
+      "type": "string",
+      "pattern": "^OBS-PKG-YDC-PANEL-[0-9]+-R[0-9]{3}$"
+    },
+    "package_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "previous_record_id": {
+      "type": ["string", "null"],
+      "pattern": "^OBSLIFE-YDC-PANEL-[0-9]+-[0-9]{6}$"
+    },
+    "actor_id": {"type": "string", "pattern": "^OBS-[A-Z0-9-]+$"},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "technical_review": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": [
+            "reviewer_id",
+            "reviewed_at",
+            "outcome",
+            "checklist"
+          ],
+          "properties": {
+            "reviewer_id": {"type": "string", "pattern": "^OBS-[A-Z0-9-]+$"},
+            "reviewed_at": {"type": "string", "format": "date-time"},
+            "outcome": {"enum": ["accepted", "revisions_required"]},
+            "checklist": {
+              "type": "object",
+              "required": [
+                "source_identity_verified",
+                "source_pixel_coordinates_verified",
+                "geometry_validated",
+                "entity_ids_validated",
+                "revision_events_validated",
+                "ambiguities_preserved",
+                "prohibited_fields_absent",
+                "predecessor_chain_validated",
+                "deterministic_revalidation_passed"
+              ],
+              "properties": {
+                "source_identity_verified": {"type": "boolean"},
+                "source_pixel_coordinates_verified": {"type": "boolean"},
+                "geometry_validated": {"type": "boolean"},
+                "entity_ids_validated": {"type": "boolean"},
+                "revision_events_validated": {"type": "boolean"},
+                "ambiguities_preserved": {"type": "boolean"},
+                "prohibited_fields_absent": {"type": "boolean"},
+                "predecessor_chain_validated": {"type": "boolean"},
+                "deterministic_revalidation_passed": {"type": "boolean"}
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "freeze": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": [
+            "freeze_id",
+            "frozen_at",
+            "package_sha256",
+            "source_sha256",
+            "predecessor_package_ids",
+            "protocol_versions",
+            "immutable"
+          ],
+          "properties": {
+            "freeze_id": {
+              "type": "string",
+              "pattern": "^OBS-PACKAGE-FREEZE-YDC-PANEL-[0-9]+-R[0-9]{3}$"
+            },
+            "frozen_at": {"type": "string", "format": "date-time"},
+            "package_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "predecessor_package_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^OBS-PKG-YDC-PANEL-[0-9]+-R[0-9]{3}$"
+              }
+            },
+            "protocol_versions": {
+              "type": "object",
+              "required": ["observation", "lifecycle", "package_schema"],
+              "properties": {
+                "observation": {"const": "OBSERVATION-PROTOCOL-0001"},
+                "lifecycle": {"const": "ANNOTATION-LIFECYCLE-0001"},
+                "package_schema": {"const": "0.1.0"}
+              },
+              "additionalProperties": false
+            },
+            "immutable": {"const": true}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "scientific_adjudication_used": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"state": {"enum": ["blank", "draft"]}}},
+      "then": {
+        "properties": {
+          "technical_review": {"type": "null"},
+          "freeze": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"state": {"const": "reviewed"}}},
+      "then": {
+        "properties": {
+          "technical_review": {"type": "object"},
+          "freeze": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"state": {"enum": ["frozen", "superseded"]}}},
+      "then": {
+        "properties": {
+          "technical_review": {"type": "object"},
+          "freeze": {"type": "object"}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
